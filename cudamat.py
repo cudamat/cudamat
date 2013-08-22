@@ -7,7 +7,7 @@ MAX_ONES = 1024*256
 if platform.system() == 'Windows':
     _cudamat = ct.cdll.LoadLibrary('libcudamat.dll')
 else:
-    _cudamat = ct.cdll.LoadLibrary('libcudamat.so')
+    _cudamat = ct.cdll.LoadLibrary(os.path.join(os.path.dirname(__file__), 'libcudamat.so'))
 
 _cudamat.get_last_cuda_error.restype = ct.c_char_p
 _cudamat.cublas_init.restype = ct.c_int
