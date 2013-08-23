@@ -1231,6 +1231,25 @@ extern float euclid_norm(cudamat* mat, int* err_code) {
     }
 }
 
+extern float manhattan_norm(cudamat* mat, int* err_code) {
+    int len = mat->size[0]*mat->size[1];
+
+    if (!mat->on_device) {
+        *err_code = ERROR_NOT_ON_DEVICE;    
+        return -1.;
+    }
+
+    float res = cublasSasum(len, mat->data_device, 1);
+
+    if (check_cublas_error()) {
+        *err_code = CUBLAS_ERROR;
+        return -1.;
+    } else {
+        *err_code = 0;
+        return res;
+    }
+}
+
 extern int selectRows(cudamat* source, cudamat* target, cudamat* indices){
     const int nRetRows = indices->size[1];
 
