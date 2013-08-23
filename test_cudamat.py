@@ -272,15 +272,16 @@ def test_sum():
     t1 = np.array(np.random.rand(1, n)*10, dtype=np.float32, order='F')
     t2 = np.array(np.random.rand(m, 1)*10, dtype=np.float32, order='F')
     
-    c1 = np.atleast_2d(a.sum(0))
+    mult = 0.8
+    c1 = np.atleast_2d(a.sum(0)) * mult
     c2 = np.atleast_2d(a.sum(1)).T
     
     m = cm.CUDAMatrix(a)
     mt1 = cm.CUDAMatrix(t1)
     mt2 = cm.CUDAMatrix(t2)
 
-    m.sum(axis = 0, target = mt1)
-    mt1r = m.sum(axis = 0)
+    m.sum(axis = 0, target = mt1, mult = mult)
+    mt1r = m.sum(axis = 0, mult = mult)
 
     m.sum(axis = 1, target = mt2)
     mt2r = m.sum(axis = 1)
@@ -326,6 +327,36 @@ def test_sum_trans():
     assert np.max(np.abs(c2 - mt2.numpy_array)) < 10**-3, "Error in CUDAMatrix.sum exceeded threshold"
     assert np.max(np.abs(c2 - mt2r.numpy_array)) < 10**-3, "Error in CUDAMatrix.sum exceeded threshold"
 
+def test_mean():
+    m = 256
+    n = 128
+    a = np.array(np.random.rand(m, n)*10, dtype=np.float32, order='F')
+    t1 = np.array(np.random.rand(1, n)*10, dtype=np.float32, order='F')
+    t2 = np.array(np.random.rand(m, 1)*10, dtype=np.float32, order='F')
+    
+    c1 = np.atleast_2d(a.mean(0))
+    c2 = np.atleast_2d(a.mean(1)).T
+    
+    m = cm.CUDAMatrix(a)
+    mt1 = cm.CUDAMatrix(t1)
+    mt2 = cm.CUDAMatrix(t2)
+
+    m.mean(axis = 0, target = mt1)
+    mt1r = m.mean(axis = 0)
+
+    m.mean(axis = 1, target = mt2)
+    mt2r = m.mean(axis = 1)
+
+    mt1.copy_to_host()
+    mt1r.copy_to_host()
+    mt2.copy_to_host()
+    mt2r.copy_to_host()
+
+    assert np.max(np.abs(c1 - mt1.numpy_array)) < 10**-3, "Error in CUDAMatrix.sum exceeded threshold"
+    assert np.max(np.abs(c1 - mt1r.numpy_array)) < 10**-3, "Error in CUDAMatrix.sum exceeded threshold"
+    assert np.max(np.abs(c2 - mt2.numpy_array)) < 10**-3, "Error in CUDAMatrix.sum exceeded threshold"
+    assert np.max(np.abs(c2 - mt2r.numpy_array)) < 10**-3, "Error in CUDAMatrix.sum exceeded threshold"
+
 def test_add_sums():
     m = 256
     n = 128
@@ -335,15 +366,16 @@ def test_add_sums():
     t2 = np.array(np.random.rand(1, n)*10, dtype=np.float32, order='F')
 
     mult = np.pi
+    beta = 0.7
     
-    c1 = t1 + mult * np.atleast_2d(a.sum(1)).T
+    c1 = beta * t1 + mult * np.atleast_2d(a.sum(1)).T
     c2 = t2 + np.atleast_2d(a.sum(0))
     
     m = cm.CUDAMatrix(a)
     mt1 = cm.CUDAMatrix(t1)
     mt2 = cm.CUDAMatrix(t2)
 
-    mt1.add_sums(m, axis = 1, mult = np.pi)
+    mt1.add_sums(m, axis = 1, mult = np.pi, beta = beta)
     mt2.add_sums(m, axis = 0)
 
     mt1.copy_to_host()
@@ -839,15 +871,19 @@ def test_dot():
     n = 64
     a = np.array(np.random.randn(m, k)*10, dtype=np.float32, order='F')
     b = np.array(np.random.randn(k, n)*10, dtype=np.float32, order='F')
+    c = np.array(np.random.randn(m, n)*10, dtype=np.float32, order='F')
 
-    c = np.dot(a, b)
+    alpha = 2.
+    beta = 0.3
+    r = beta * c + alpha * np.dot(a, b)
 
     m1 = cm.CUDAMatrix(a)
     m2 = cm.CUDAMatrix(b)
-    m3 = cm.dot(m1, m2)
+    m3 = cm.CUDAMatrix(c)
+    m3 = cm.dot(m1, m2, target = m3, alpha = alpha, beta = beta)
     m3.copy_to_host()
 
-    assert np.max(np.abs(c - m3.numpy_array)) < 10**-2, "Error in CUDAMatrix.dot exceeded threshold"
+    assert np.max(np.abs(r - m3.numpy_array)) < 10**-2, "Error in CUDAMatrix.dot exceeded threshold"
 
 def test_dot_trans():
     m = 128
@@ -874,12 +910,14 @@ def test_add_dot():
     b = np.array(np.random.randn(k, n)*10, dtype=np.float32, order='F')
     c = np.array(np.random.randn(m, n)*10, dtype=np.float32, order='F')
 
-    res = c + np.dot(a, b)
+    mult = 2.1
+    beta = 0.8
+    res = beta * c + mult * np.dot(a, b)
 
     m1 = cm.CUDAMatrix(a)
     m2 = cm.CUDAMatrix(b)
     m3 = cm.CUDAMatrix(c)
-    m3.add_dot(m1, m2)
+    m3.add_dot(m1, m2, mult = mult, beta = beta)
 
     m3.copy_to_host()
 
