@@ -944,6 +944,25 @@ def test_euclid_norm():
 
     assert np.abs(n1-n2) < 10**-2, "Error in CUDAMatrix.euclid_norm exceeded threshold"
 
+def test_manhattan_norm():
+    m = 256
+    n = 128
+    a = np.array(np.random.rand(m, n)*10, dtype=np.float32, order='F')
+    
+    m = cm.CUDAMatrix(a)
+
+    n1 = np.sum(np.abs(a), dtype=np.double)
+    n2 = m.manhattan_norm()
+
+    assert np.abs(n1-n2) < 2e-2, "Error in CUDAMatrix.manhattan_norm exceeded threshold (%f != %f)" % (n1, n2)
+
+def test_allfinite():
+    a = cm.empty((10, 20)).assign(1).divide(0)  # NaN
+    b = cm.empty((10, 20)).assign(1e20).mult(1e20)  # Inf
+    c = cm.empty((10, 20)).assign(1)  # 1.0
+    
+    assert (not a.allfinite()) and (not b.allfinite()) and c.allfinite(), "CUDAMatrix.allfinite does not work"
+
 def test_select_columns():
     m = 256
     n = 128

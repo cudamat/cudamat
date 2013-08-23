@@ -68,6 +68,7 @@ _cudamat.divide_by_scalar.restype = ct.c_int
 _cudamat.add_scalar.restype = ct.c_int
 
 _cudamat.euclid_norm.restype = ct.c_float
+_cudamat.manhattan_norm.restype = ct.c_float
 _cudamat.selectRows.restype = ct.c_int
 _cudamat.setSelectedRows.restype = ct.c_int
 _cudamat.vdot.restype = ct.c_float
@@ -803,6 +804,9 @@ class CUDAMatrix(object):
         return target
 
     def euclid_norm(self):
+    	"""
+    	Returns the L2 norm of the matrix flattened to a vector.
+    	"""
         err_code = ct.c_int(0)
         res = _cudamat.euclid_norm(self.p_mat, ct.byref(err_code))
 
@@ -810,6 +814,27 @@ class CUDAMatrix(object):
             raise generate_exception(err_code.value)
 
         return res
+
+    def manhattan_norm(self):
+    	"""
+    	Returns the L1 norm of the matrix flattened to a vector.
+    	"""
+        err_code = ct.c_int(0)
+        res = _cudamat.manhattan_norm(self.p_mat, ct.byref(err_code))
+
+        if err_code:
+            raise generate_exception(err_code.value)
+
+        return res
+
+    def allfinite(self):
+        """
+        Checks if all entries in this matrix are finite, i.e., there is no
+        NaN and no positive or negative infinity.
+        """
+        # Caveat: For a very large matrix of very large finite numbers, the
+        # manhattan norm may overflow and allfinite() may return False.
+        return np.isfinite(self.manhattan_norm())
 
     def select_columns(self, indices, target):
         """
