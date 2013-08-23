@@ -221,9 +221,17 @@ class CUDAMatrix(object):
         m = ct.c_uint(shape[0])
         n = ct.c_uint(shape[1])
 
+        # Reshape the default matrix
         err_code = _cudamat.reshape(self.p_mat, m, n)
         if err_code:
             raise generate_exception(err_code)
+        # Reshape the transposed matrix
+        err_code = _cudamat.reshape(self.T.p_mat, m, n)
+        if err_code:
+            raise generate_exception(err_code)
+        # Reshape the CPU matrix
+        if self.mat.on_host:
+            self.numpy_array = np.reshape(self.numpy_array, shape, order='F')
 
         return self
 
