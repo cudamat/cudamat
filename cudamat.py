@@ -47,6 +47,7 @@ _cudamat.max_by_axis.restype = ct.c_int
 _cudamat.sign.restype = ct.c_int
 _cudamat.apply_sigmoid.restype = ct.c_int
 _cudamat.apply_tanh.restype = ct.c_int
+_cudamat.apply_soft_threshold.restype = ct.c_int
 _cudamat.apply_abs.restype = ct.c_int
 _cudamat.apply_log_1_plus_exp.restype = ct.c_int
 _cudamat.apply_log.restype = ct.c_int
@@ -603,6 +604,22 @@ class CUDAMatrix(object):
 
         return sigmoid(self, target)
 
+    def apply_tanh(self, target = None):
+        """
+        Apply the tanh to each element of the matrix.
+        """
+
+        return tanh(self, target)
+
+    def apply_soft_threshold(self, alpha, target = None):
+        """
+        Apply the soft threshold function to each element of the matrix:
+
+        x = sign(x) * max(0, abs(x) - alpha)
+        """
+
+        return soft_threshold(self, alpha, target)
+
     def reciprocal(self, target = None):
         """
         Find the reciprocal of each element of the matrix.
@@ -946,6 +963,22 @@ def tanh(mat, target = None):
         target = mat
 
     err_code = _cudamat.apply_tanh(mat.p_mat, target.p_mat)
+    if err_code:
+        raise generate_exception(err_code)
+
+    return target
+
+def soft_threshold(mat, alpha, target = None):
+    """
+    Apply the soft threshold function to each element of the matrix:
+
+    mat = sign(mat) * max(0, abs(mat) - alpha)
+    """
+
+    if not target:
+        target = mat
+
+    err_code = _cudamat.apply_soft_threshold(mat.p_mat, ct.c_float(alpha), target.p_mat)
     if err_code:
         raise generate_exception(err_code)
 

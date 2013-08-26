@@ -743,6 +743,25 @@ extern int apply_tanh(cudamat* mat, cudamat* target) {
     return 0;
 }
 
+extern int apply_soft_threshold(cudamat* mat, float alpha, cudamat* target) {
+    unsigned int len = mat->size[0] * mat->size[1];
+
+    if (!mat->on_device || !target->on_device)
+        return ERROR_NOT_ON_DEVICE;
+
+    if (mat->size[0] != target->size[0] || mat->size[1] != target->size[1])
+        return ERROR_INCOMPATIBLE_DIMENSIONS;
+
+    kApplySoftThreshold<<<NUM_VECTOR_OP_BLOCKS,NUM_VECTOR_OP_THREADS_PER_BLOCK>>>(mat->data_device, alpha, target->data_device, len);
+
+    cudaThreadSynchronize();
+
+    if (checkCUDAError())
+        return CUDA_ERROR;
+
+    return 0;
+}
+
 extern int apply_abs(cudamat* mat, cudamat* target) {
     unsigned int len = mat->size[0] * mat->size[1];
 

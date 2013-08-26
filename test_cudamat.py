@@ -492,6 +492,45 @@ def test_sigmoid():
     assert np.max(np.abs(c - m1.numpy_array)) < 10**-4, "Error in CUDAMatrix.apply_sigmoid exceeded threshold"
     assert np.max(np.abs(c - m2.numpy_array)) < 10**-4, "Error in CUDAMatrix.apply_sigmoid exceeded threshold"
 
+def test_tanh():
+    m = 256
+    n = 128
+    a = np.array(np.random.randn(m, n)*10, dtype=np.float32, order='F')
+    b = np.array(np.random.randn(m, n)*10, dtype=np.float32, order='F')
+
+    c = np.tanh(a)
+
+    m1 = cm.CUDAMatrix(a)
+    m2 = cm.CUDAMatrix(b)
+    m1.apply_tanh(target = m2)
+    m1.apply_tanh()
+
+    m1.copy_to_host()
+    m2.copy_to_host()
+
+    assert np.max(np.abs(c - m1.numpy_array)) < 10**-4, "Error in CUDAMatrix.apply_tanh exceeded threshold"
+    assert np.max(np.abs(c - m2.numpy_array)) < 10**-4, "Error in CUDAMatrix.apply_tanh exceeded threshold"
+
+def test_soft_threshold():
+    m = 256
+    n = 128
+    a = np.array(np.random.randn(m, n)*10, dtype=np.float32, order='F')
+    b = np.array(np.random.randn(m, n)*10, dtype=np.float32, order='F')
+
+    alpha = 0.5
+    c = np.sign(a) * np.maximum(0, np.abs(a) - alpha)
+
+    m1 = cm.CUDAMatrix(a)
+    m2 = cm.CUDAMatrix(b)
+    m1.apply_soft_threshold(alpha, target = m2)
+    m1.apply_soft_threshold(alpha)
+
+    m1.copy_to_host()
+    m2.copy_to_host()
+
+    assert np.max(np.abs(c - m1.numpy_array)) < 10**-4, "Error in CUDAMatrix.apply_soft_threshold exceeded threshold"
+    assert np.max(np.abs(c - m2.numpy_array)) < 10**-4, "Error in CUDAMatrix.apply_soft_threshold exceeded threshold"
+
 def test_log():
     m = 256
     n = 128
