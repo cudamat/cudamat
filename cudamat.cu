@@ -623,7 +623,8 @@ extern int equals(cudamat* mat1, cudamat* mat2, cudamat* target) {
 
     kEquals<<<NUM_VECTOR_OP_BLOCKS,NUM_VECTOR_OP_THREADS_PER_BLOCK>>>(mat1->data_device, mat2->data_device, target->data_device, len);
 
-    cudaThreadSynchronize();
+    if (SYNC_THREADS)
+        cudaThreadSynchronize();
 
     if (checkCUDAError())
         return CUDA_ERROR;
@@ -645,7 +646,8 @@ extern int equals_scalar(cudamat* mat, float val, cudamat* target) {
 
     kEqualsScalar<<<NUM_VECTOR_OP_BLOCKS,NUM_VECTOR_OP_THREADS_PER_BLOCK>>>(mat->data_device, val, target->data_device, len);
 
-    cudaThreadSynchronize();
+    if (SYNC_THREADS)
+        cudaThreadSynchronize();
 
     if (checkCUDAError())
         return CUDA_ERROR;
