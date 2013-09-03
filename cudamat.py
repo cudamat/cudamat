@@ -43,6 +43,10 @@ _cudamat.greater_than.restype = ct.c_int
 _cudamat.greater_than_scalar.restype = ct.c_int
 _cudamat.equals.restype = ct.c_int
 _cudamat.equals_scalar.restype = ct.c_int
+_cudamat.minimum.restype = ct.c_int
+_cudamat.minimum_scalar.restype = ct.c_int
+_cudamat.maximum.restype = ct.c_int
+_cudamat.maximum_scalar.restype = ct.c_int
 _cudamat.max_by_axis.restype = ct.c_int
 _cudamat.sign.restype = ct.c_int
 _cudamat.apply_sigmoid.restype = ct.c_int
@@ -554,6 +558,44 @@ class CUDAMatrix(object):
             err_code = _cudamat.equals_scalar(self.p_mat, ct.c_float(val), target.p_mat)
         else:
             err_code = _cudamat.equals(self.p_mat, val.p_mat, target.p_mat)
+
+        if err_code:
+            raise generate_exception(err_code)
+
+        return target
+
+    def minimum(self, val, target = None):
+        """
+        Perform the element-wise operation target = min(self, val), where
+        val can be a matrix or a scalar.
+        """
+
+        if not target:
+            target = self
+
+        if isinstance(val, (int, float)):
+            err_code = _cudamat.minimum_scalar(self.p_mat, ct.c_float(val), target.p_mat)
+        else:
+            err_code = _cudamat.minimum(self.p_mat, val.p_mat, target.p_mat)
+
+        if err_code:
+            raise generate_exception(err_code)
+
+        return target
+
+    def maximum(self, val, target = None):
+        """
+        Perform the element-wise operation target = max(self, val), where
+        val can be a matrix or a scalar.
+        """
+
+        if not target:
+            target = self
+
+        if isinstance(val, (int, float)):
+            err_code = _cudamat.maximum_scalar(self.p_mat, ct.c_float(val), target.p_mat)
+        else:
+            err_code = _cudamat.maximum(self.p_mat, val.p_mat, target.p_mat)
 
         if err_code:
             raise generate_exception(err_code)

@@ -653,6 +653,96 @@ extern int equals_scalar(cudamat* mat, float val, cudamat* target) {
     return 0;
 }
 
+extern int minimum(cudamat* mat1, cudamat* mat2, cudamat* target) {
+    int len = mat1->size[0]*mat1->size[1];
+
+    if (!mat1->on_device || !mat2->on_device || !target->on_device)
+        return ERROR_NOT_ON_DEVICE;
+
+    if (mat1->is_trans != mat2->is_trans)
+        return ERROR_TRANSPOSEDNESS;
+
+    if (mat1->size[0] != mat2->size[0] || mat1->size[1] != mat2->size[1] ||
+        mat1->size[0] != target->size[0] || mat1->size[1] != target->size[1])
+        return ERROR_INCOMPATIBLE_DIMENSIONS;
+
+    kMinimum<<<NUM_VECTOR_OP_BLOCKS,NUM_VECTOR_OP_THREADS_PER_BLOCK>>>(mat1->data_device, mat2->data_device, target->data_device, len);
+
+    cudaThreadSynchronize();
+
+    if (checkCUDAError())
+        return CUDA_ERROR;
+
+    return 0;
+}
+
+extern int minimum_scalar(cudamat* mat, float val, cudamat* target) {
+    int len = mat->size[0]*mat->size[1];
+
+    if (!mat->on_device || !target->on_device)
+        return ERROR_NOT_ON_DEVICE;
+
+    if (mat->is_trans != target->is_trans)
+        return ERROR_TRANSPOSEDNESS;
+
+    if (mat->size[0] != target->size[0] || mat->size[1] != target->size[1])
+        return ERROR_INCOMPATIBLE_DIMENSIONS;
+
+    kMinimumScalar<<<NUM_VECTOR_OP_BLOCKS,NUM_VECTOR_OP_THREADS_PER_BLOCK>>>(mat->data_device, val, target->data_device, len);
+
+    cudaThreadSynchronize();
+
+    if (checkCUDAError())
+        return CUDA_ERROR;
+
+    return 0;
+}
+
+extern int maximum(cudamat* mat1, cudamat* mat2, cudamat* target) {
+    int len = mat1->size[0]*mat1->size[1];
+
+    if (!mat1->on_device || !mat2->on_device || !target->on_device)
+        return ERROR_NOT_ON_DEVICE;
+
+    if (mat1->is_trans != mat2->is_trans)
+        return ERROR_TRANSPOSEDNESS;
+
+    if (mat1->size[0] != mat2->size[0] || mat1->size[1] != mat2->size[1] ||
+        mat1->size[0] != target->size[0] || mat1->size[1] != target->size[1])
+        return ERROR_INCOMPATIBLE_DIMENSIONS;
+
+    kMaximum<<<NUM_VECTOR_OP_BLOCKS,NUM_VECTOR_OP_THREADS_PER_BLOCK>>>(mat1->data_device, mat2->data_device, target->data_device, len);
+
+    cudaThreadSynchronize();
+
+    if (checkCUDAError())
+        return CUDA_ERROR;
+
+    return 0;
+}
+
+extern int maximum_scalar(cudamat* mat, float val, cudamat* target) {
+    int len = mat->size[0]*mat->size[1];
+
+    if (!mat->on_device || !target->on_device)
+        return ERROR_NOT_ON_DEVICE;
+
+    if (mat->is_trans != target->is_trans)
+        return ERROR_TRANSPOSEDNESS;
+
+    if (mat->size[0] != target->size[0] || mat->size[1] != target->size[1])
+        return ERROR_INCOMPATIBLE_DIMENSIONS;
+
+    kMaximumScalar<<<NUM_VECTOR_OP_BLOCKS,NUM_VECTOR_OP_THREADS_PER_BLOCK>>>(mat->data_device, val, target->data_device, len);
+
+    cudaThreadSynchronize();
+
+    if (checkCUDAError())
+        return CUDA_ERROR;
+
+    return 0;
+}
+
 extern int max_by_axis(cudamat* mat, cudamat* target, int axis) {
     unsigned int h = mat->size[0],
                  w = mat->size[1];

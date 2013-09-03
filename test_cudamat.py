@@ -411,6 +411,64 @@ def test_greater_than():
     assert np.max(np.abs(r1 - dt1.numpy_array)) < 10**-4, "Error in CUDAMatrix.greater_than exceeded threshold"
     assert np.max(np.abs(r2 - dt2.numpy_array)) < 10**-4, "Error in CUDAMatrix.greater_than exceeded threshold"
 
+def test_minimum():
+    m = 256
+    n = 128
+    a = np.array(np.random.randn(m, n)*10, dtype=np.float32, order='F')
+    b = np.array(np.random.randn(m, n)*10, dtype=np.float32, order='F')
+    t1 = np.array(np.random.randn(m, n)*10, dtype=np.float32, order='F')
+    t2 = np.array(np.random.randn(m, n)*10, dtype=np.float32, order='F')
+    v = 0.1
+
+    r1 = np.minimum(a, b)
+    r2 = np.minimum(a, v)
+
+    da = cm.CUDAMatrix(a)
+    db = cm.CUDAMatrix(b)
+    dt1 = cm.CUDAMatrix(t1)
+    dt2 = cm.CUDAMatrix(t2)
+
+    da.minimum(db, target = dt1)
+    da.minimum(v, target = dt2)
+    da.minimum(db)
+
+    da.copy_to_host()
+    dt1.copy_to_host()
+    dt2.copy_to_host()
+
+    assert np.max(np.abs(r1 - da.numpy_array)) < 10**-4, "Error in CUDAMatrix.minimum exceeded threshold"
+    assert np.max(np.abs(r1 - dt1.numpy_array)) < 10**-4, "Error in CUDAMatrix.minimum exceeded threshold"
+    assert np.max(np.abs(r2 - dt2.numpy_array)) < 10**-4, "Error in CUDAMatrix.minimum exceeded threshold"
+
+def test_maximum():
+    m = 256
+    n = 128
+    a = np.array(np.random.randn(m, n)*10, dtype=np.float32, order='F')
+    b = np.array(np.random.randn(m, n)*10, dtype=np.float32, order='F')
+    t1 = np.array(np.random.randn(m, n)*10, dtype=np.float32, order='F')
+    t2 = np.array(np.random.randn(m, n)*10, dtype=np.float32, order='F')
+    v = 0.1
+
+    r1 = np.maximum(a, b)
+    r2 = np.maximum(a, v)
+
+    da = cm.CUDAMatrix(a)
+    db = cm.CUDAMatrix(b)
+    dt1 = cm.CUDAMatrix(t1)
+    dt2 = cm.CUDAMatrix(t2)
+
+    da.maximum(db, target = dt1)
+    da.maximum(v, target = dt2)
+    da.maximum(db)
+
+    da.copy_to_host()
+    dt1.copy_to_host()
+    dt2.copy_to_host()
+
+    assert np.max(np.abs(r1 - da.numpy_array)) < 10**-4, "Error in CUDAMatrix.maximum exceeded threshold"
+    assert np.max(np.abs(r1 - dt1.numpy_array)) < 10**-4, "Error in CUDAMatrix.maximum exceeded threshold"
+    assert np.max(np.abs(r2 - dt2.numpy_array)) < 10**-4, "Error in CUDAMatrix.maximum exceeded threshold"
+
 def test_max():
     m = 256
     n = 128
