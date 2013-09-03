@@ -265,6 +265,48 @@ def test_mult_by_row():
     assert np.max(np.abs(c - m1.numpy_array)) < 10**-4, "Error in CUDAMatrix.mult_by_row exceeded threshold"
     assert np.max(np.abs(c - m3.numpy_array)) < 10**-4, "Error in CUDAMatrix.mult_by_row exceeded threshold"
 
+def test_div_by_col():
+    m = 256
+    n = 128
+    a = np.array(np.random.rand(m, n)*10, dtype=np.float32, order='F')
+    b = np.array(np.random.rand(m, 1)*10, dtype=np.float32, order='F') + 0.1
+    t = np.array(np.random.rand(m, n)*10, dtype=np.float32, order='F')
+    
+    c = a / b
+    
+    m1 = cm.CUDAMatrix(a)
+    m2 = cm.CUDAMatrix(b)
+    m3 = cm.CUDAMatrix(t)
+
+    m1.div_by_col(m2, target = m3)
+    m1.div_by_col(m2)
+    m1.copy_to_host()
+    m3.copy_to_host()
+
+    assert np.max(np.abs(c - m1.numpy_array)) < 10**-4, "Error in CUDAMatrix.div_by_col exceeded threshold"
+    assert np.max(np.abs(c - m3.numpy_array)) < 10**-4, "Error in CUDAMatrix.div_by_col exceeded threshold"
+
+def test_div_by_row():
+    m = 256
+    n = 128
+    a = np.array(np.random.rand(m, n)*10, dtype=np.float32, order='F')
+    b = np.array(np.random.rand(1, n)*10, dtype=np.float32, order='F') + 0.1
+    t = np.array(np.random.rand(m, n)*10, dtype=np.float32, order='F')
+    
+    c = a / b
+    
+    m1 = cm.CUDAMatrix(a)
+    m2 = cm.CUDAMatrix(b)
+    m3 = cm.CUDAMatrix(t)
+
+    m1.div_by_row(m2, target = m3)
+    m1.div_by_row(m2)
+    m1.copy_to_host()
+    m3.copy_to_host()
+
+    assert np.max(np.abs(c - m1.numpy_array)) < 10**-4, "Error in CUDAMatrix.div_by_row exceeded threshold"
+    assert np.max(np.abs(c - m3.numpy_array)) < 10**-4, "Error in CUDAMatrix.div_by_row exceeded threshold"
+
 def test_sum():
     m = 256
     n = 128

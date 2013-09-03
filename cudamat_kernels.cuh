@@ -57,6 +57,8 @@ __global__ void kAddRowVector(float* mat, float* vec, float* tgtMat, unsigned in
 __global__ void kAddColMult(float* mat, float* vec, float* tgtMat, float mult, unsigned int width, unsigned int height);
 __global__ void kMultByColVector(float* mat, float* vec, float* tgtMat, unsigned int width, unsigned int height);
 __global__ void kMultByRowVector(float* mat, float* vec, float* tgtMat, unsigned int width, unsigned int height);
+__global__ void kDivByColVector(float* mat, float* vec, float* tgtMat, unsigned int width, unsigned int height);
+__global__ void kDivByRowVector(float* mat, float* vec, float* tgtMat, unsigned int width, unsigned int height);
 __global__ void kAdd(float* a, float* b, float* dest, unsigned int numEls);
 __global__ void kSubtract(float* a, float* b, float* dest, unsigned int numEls);
 __global__ void kMult(float* a, float* b, float* dest, unsigned int numEls);
