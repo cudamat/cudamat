@@ -47,7 +47,10 @@ _cudamat.minimum.restype = ct.c_int
 _cudamat.minimum_scalar.restype = ct.c_int
 _cudamat.maximum.restype = ct.c_int
 _cudamat.maximum_scalar.restype = ct.c_int
+_cudamat.min_by_axis.restype = ct.c_int
 _cudamat.max_by_axis.restype = ct.c_int
+_cudamat.argmin_by_axis.restype = ct.c_int
+_cudamat.argmax_by_axis.restype = ct.c_int
 _cudamat.sign.restype = ct.c_int
 _cudamat.apply_sigmoid.restype = ct.c_int
 _cudamat.apply_tanh.restype = ct.c_int
@@ -643,6 +646,54 @@ class CUDAMatrix(object):
                 target = empty((m, 1))
 
         err_code =  _cudamat.max_by_axis(self.p_mat, target.p_mat, ct.c_int(axis))
+        if err_code:
+            raise generate_exception(err_code)
+
+        return target
+
+    def argmin(self, axis, target = None):
+        """
+        Find the index of the minimum value along the given dimension, where 0
+        represents the leading dimension and 1 represents the non-leading
+        dimension. If a target is not provided, a new vector is created for
+        storing the result.
+        """
+
+        m, n = self.shape
+
+        if axis == 0:
+            if not target:
+                target = empty((1, n))
+ 
+        elif axis == 1:
+            if not target:
+                target = empty((m, 1))
+
+        err_code =  _cudamat.argmin_by_axis(self.p_mat, target.p_mat, ct.c_int(axis))
+        if err_code:
+            raise generate_exception(err_code)
+
+        return target
+
+    def argmax(self, axis, target = None):
+        """
+        Find the index of the maximum value along the given dimension, where 0
+        represents the leading dimension and 1 represents the non-leading
+        dimension. If a target is not provided, a new vector is created for
+        storing the result.
+        """
+
+        m, n = self.shape
+
+        if axis == 0:
+            if not target:
+                target = empty((1, n))
+ 
+        elif axis == 1:
+            if not target:
+                target = empty((m, 1))
+
+        err_code =  _cudamat.argmax_by_axis(self.p_mat, target.p_mat, ct.c_int(axis))
         if err_code:
             raise generate_exception(err_code)
 

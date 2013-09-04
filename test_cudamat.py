@@ -469,65 +469,36 @@ def test_maximum():
     assert np.max(np.abs(r1 - dt1.numpy_array)) < 10**-4, "Error in CUDAMatrix.maximum exceeded threshold"
     assert np.max(np.abs(r2 - dt2.numpy_array)) < 10**-4, "Error in CUDAMatrix.maximum exceeded threshold"
 
-def test_min():
+def test_minmax():
     m = 256
     n = 128
-    for sign in (1, -1):
-        a = np.array(np.random.randn(m, n)*10*sign, dtype=np.float32, order='F')
-        t0 = np.array(np.random.rand(1, n)*10, dtype=np.float32, order='F')
-        t1 = np.array(np.random.rand(m, 1)*10, dtype=np.float32, order='F')
-       
-        r0 = np.atleast_2d(a.min(0)) 
-        r1 = np.atleast_2d(a.min(1)) 
-        
-        da = cm.CUDAMatrix(a)
-        dr10 = cm.CUDAMatrix(t0)
-        dr11 = cm.CUDAMatrix(t1)
+    for op in 'min', 'max', 'argmin', 'argmax':
+        for sign in (1, -1):
+            a = np.array(np.random.randn(m, n)*10*sign, dtype=np.float32, order='F')
+            t0 = np.array(np.random.rand(1, n)*10, dtype=np.float32, order='F')
+            t1 = np.array(np.random.rand(m, 1)*10, dtype=np.float32, order='F')
+           
+            r0 = np.atleast_2d(getattr(a, op)(0)) 
+            r1 = np.atleast_2d(getattr(a, op)(1)) 
+            
+            da = cm.CUDAMatrix(a)
+            dr10 = cm.CUDAMatrix(t0)
+            dr11 = cm.CUDAMatrix(t1)
 
-        da.min(axis = 0, target = dr10)
-        da.min(axis = 1, target = dr11)
-        dr20 = da.min(axis = 0)
-        dr21 = da.min(axis = 1)
+            getattr(da, op)(axis = 0, target = dr10)
+            getattr(da, op)(axis = 1, target = dr11)
+            dr20 = getattr(da, op)(axis = 0)
+            dr21 = getattr(da, op)(axis = 1)
 
-        dr10.copy_to_host()
-        dr11.copy_to_host()
-        dr20.copy_to_host()
-        dr21.copy_to_host()
+            dr10.copy_to_host()
+            dr11.copy_to_host()
+            dr20.copy_to_host()
+            dr21.copy_to_host()
 
-        assert np.max(np.abs(r0 - dr10.numpy_array)) < 10**-4, "Error in CUDAMatrix.max exceeded threshold"
-        assert np.max(np.abs(r1 - dr11.numpy_array.T)) < 10**-4, "Error in CUDAMatrix.max exceeded threshold"
-        assert np.max(np.abs(r0 - dr20.numpy_array)) < 10**-4, "Error in CUDAMatrix.max exceeded threshold"
-        assert np.max(np.abs(r1 - dr21.numpy_array.T)) < 10**-4, "Error in CUDAMatrix.max exceeded threshold"
-
-def test_max():
-    m = 256
-    n = 128
-    for sign in (1, -1):
-        a = np.array(np.random.randn(m, n)*10*sign, dtype=np.float32, order='F')
-        t0 = np.array(np.random.rand(1, n)*10, dtype=np.float32, order='F')
-        t1 = np.array(np.random.rand(m, 1)*10, dtype=np.float32, order='F')
-       
-        r0 = np.atleast_2d(a.max(0)) 
-        r1 = np.atleast_2d(a.max(1)) 
-        
-        da = cm.CUDAMatrix(a)
-        dr10 = cm.CUDAMatrix(t0)
-        dr11 = cm.CUDAMatrix(t1)
-
-        da.max(axis = 0, target = dr10)
-        da.max(axis = 1, target = dr11)
-        dr20 = da.max(axis = 0)
-        dr21 = da.max(axis = 1)
-
-        dr10.copy_to_host()
-        dr11.copy_to_host()
-        dr20.copy_to_host()
-        dr21.copy_to_host()
-
-        assert np.max(np.abs(r0 - dr10.numpy_array)) < 10**-4, "Error in CUDAMatrix.max exceeded threshold"
-        assert np.max(np.abs(r1 - dr11.numpy_array.T)) < 10**-4, "Error in CUDAMatrix.max exceeded threshold"
-        assert np.max(np.abs(r0 - dr20.numpy_array)) < 10**-4, "Error in CUDAMatrix.max exceeded threshold"
-        assert np.max(np.abs(r1 - dr21.numpy_array.T)) < 10**-4, "Error in CUDAMatrix.max exceeded threshold"
+            assert np.max(np.abs(r0 - dr10.numpy_array)) < 10**-4, "Error in CUDAMatrix.%s exceeded threshold" % op
+            assert np.max(np.abs(r1 - dr11.numpy_array.T)) < 10**-4, "Error in CUDAMatrix.%s exceeded threshold" % op
+            assert np.max(np.abs(r0 - dr20.numpy_array)) < 10**-4, "Error in CUDAMatrix.%s exceeded threshold" % op
+            assert np.max(np.abs(r1 - dr21.numpy_array.T)) < 10**-4, "Error in CUDAMatrix.%s exceeded threshold" % op
 
 def test_sign():
     m = 256

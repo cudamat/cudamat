@@ -805,6 +805,68 @@ extern int max_by_axis(cudamat* mat, cudamat* target, int axis) {
     return 0;
 }
 
+extern int argmin_by_axis(cudamat* mat, cudamat* target, int axis) {
+    unsigned int h = mat->size[0],
+                 w = mat->size[1];
+
+    if (!mat->on_device || !target->on_device)
+        return ERROR_NOT_ON_DEVICE;
+
+    if (mat->is_trans)
+        return ERROR_TRANSPOSED;
+
+    if (axis == 0) {
+        if (target->size[0] != 1 || target->size[1] != mat->size[1])
+            return ERROR_INCOMPATIBLE_DIMENSIONS;
+
+        kArgMinColumnwise<<<w,32>>>(mat->data_device, target->data_device, w, h);
+    } else {
+        if (target->size[1] != 1 || target->size[0] != mat->size[0])
+            return ERROR_INCOMPATIBLE_DIMENSIONS;
+
+        kArgMinRowwise<<<h,32>>>(mat->data_device, target->data_device, w, h);
+    }
+
+    if (SYNC_THREADS)
+        cudaThreadSynchronize();
+
+    if (checkCUDAError())
+        return CUDA_ERROR;
+
+    return 0;
+}
+
+extern int argmax_by_axis(cudamat* mat, cudamat* target, int axis) {
+    unsigned int h = mat->size[0],
+                 w = mat->size[1];
+
+    if (!mat->on_device || !target->on_device)
+        return ERROR_NOT_ON_DEVICE;
+
+    if (mat->is_trans)
+        return ERROR_TRANSPOSED;
+
+    if (axis == 0) {
+        if (target->size[0] != 1 || target->size[1] != mat->size[1])
+            return ERROR_INCOMPATIBLE_DIMENSIONS;
+
+        kArgMaxColumnwise<<<w,32>>>(mat->data_device, target->data_device, w, h);
+    } else {
+        if (target->size[1] != 1 || target->size[0] != mat->size[0])
+            return ERROR_INCOMPATIBLE_DIMENSIONS;
+
+        kArgMaxRowwise<<<h,32>>>(mat->data_device, target->data_device, w, h);
+    }
+
+    if (SYNC_THREADS)
+        cudaThreadSynchronize();
+
+    if (checkCUDAError())
+        return CUDA_ERROR;
+
+    return 0;
+}
+
 extern int sign(cudamat* mat, cudamat* target) {
     int len = mat->size[0]*mat->size[1];
 
