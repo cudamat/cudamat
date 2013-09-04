@@ -743,6 +743,37 @@ extern int maximum_scalar(cudamat* mat, float val, cudamat* target) {
     return 0;
 }
 
+extern int min_by_axis(cudamat* mat, cudamat* target, int axis) {
+    unsigned int h = mat->size[0],
+                 w = mat->size[1];
+
+    if (!mat->on_device || !target->on_device)
+        return ERROR_NOT_ON_DEVICE;
+
+    if (mat->is_trans)
+        return ERROR_TRANSPOSED;
+
+    if (axis == 0) {
+        if (target->size[0] != 1 || target->size[1] != mat->size[1])
+            return ERROR_INCOMPATIBLE_DIMENSIONS;
+
+        kMinColumnwise<<<w,32>>>(mat->data_device, target->data_device, w, h);
+    } else {
+        if (target->size[1] != 1 || target->size[0] != mat->size[0])
+            return ERROR_INCOMPATIBLE_DIMENSIONS;
+
+        kMinRowwise<<<h,32>>>(mat->data_device, target->data_device, w, h);
+    }
+
+    if (SYNC_THREADS)
+        cudaThreadSynchronize();
+
+    if (checkCUDAError())
+        return CUDA_ERROR;
+
+    return 0;
+}
+
 extern int max_by_axis(cudamat* mat, cudamat* target, int axis) {
     unsigned int h = mat->size[0],
                  w = mat->size[1];

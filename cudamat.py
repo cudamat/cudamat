@@ -602,6 +602,29 @@ class CUDAMatrix(object):
 
         return target
 
+    def min(self, axis, target = None):
+        """
+        Find the minimum value along the given dimension, where 0 represents the
+        leading dimension and 1 represents the non-leading dimension. If a target
+        is not prvided, a new vector is created for storing the result.
+        """
+
+        m, n = self.shape
+
+        if axis == 0:
+            if not target:
+                target = empty((1, n))
+ 
+        elif axis == 1:
+            if not target:
+                target = empty((m, 1))
+
+        err_code =  _cudamat.min_by_axis(self.p_mat, target.p_mat, ct.c_int(axis))
+        if err_code:
+            raise generate_exception(err_code)
+
+        return target
+
     def max(self, axis, target = None):
         """
         Find the maximum value along the given dimension, where 0 represents the

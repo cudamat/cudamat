@@ -42,6 +42,8 @@ __global__ void kMinimum(float* mat1, float* mat2, float* target, unsigned int l
 __global__ void kMinimumScalar(float* mat, float val, float* target, unsigned int len);
 __global__ void kMaximum(float* mat1, float* mat2, float* target, unsigned int len);
 __global__ void kMaximumScalar(float* mat, float val, float* target, unsigned int len);
+__global__ void kMinColumnwise(float* mat, float* target, unsigned int width, unsigned int height);
+__global__ void kMinRowwise(float* mat, float* target, unsigned int width, unsigned int height);
 __global__ void kMaxColumnwise(float* mat, float* target, unsigned int width, unsigned int height);
 __global__ void kMaxRowwise(float* mat, float* target, unsigned int width, unsigned int height);
 __global__ void kSign(float* mat, float* target, unsigned int len);

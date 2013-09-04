@@ -204,6 +204,60 @@ __global__ void kMaximumScalar(float* mat, float val, float* target, unsigned in
     }
 }
 
+__global__ void kMinColumnwise(float* mat, float* target, unsigned int width, unsigned int height) {
+    __shared__ float min_vals[32];
+    float cur_min = FLT_MAX;
+    float val = 0;
+ 
+    for (unsigned int i = threadIdx.x; i < height; i += 32) {
+        val = mat[blockIdx.x * height + i];
+
+        if (val < cur_min)
+            cur_min = val;
+    }
+
+    min_vals[threadIdx.x] = cur_min;
+
+    __syncthreads();
+
+    if (threadIdx.x == 0) {
+        cur_min = FLT_MAX;
+
+        for (unsigned int i = 0; i < 32; i++)
+            if (min_vals[i] < cur_min)
+                cur_min = min_vals[i];
+
+        target[blockIdx.x] = cur_min;
+    }
+}
+
+__global__ void kMinRowwise(float* mat, float* target, unsigned int width, unsigned int height) {
+    __shared__ float min_vals[32];
+    float cur_min = FLT_MAX;
+    float val = 0;
+ 
+    for (unsigned int i = threadIdx.x; i < width; i += 32) {
+        val = mat[i * height + blockIdx.x];
+
+        if (val < cur_min)
+            cur_min = val;
+    }
+
+    min_vals[threadIdx.x] = cur_min;
+
+    __syncthreads();
+
+    if (threadIdx.x == 0) {
+        cur_min = FLT_MAX;
+
+        for (unsigned int i = 0; i < 32; i++)
+            if (min_vals[i] < cur_min)
+                cur_min = min_vals[i];
+
+        target[blockIdx.x] = cur_min;
+    }
+}
+
 __global__ void kMaxColumnwise(float* mat, float* target, unsigned int width, unsigned int height) {
     __shared__ float max_vals[32];
     float cur_max = -FLT_MAX;
