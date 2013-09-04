@@ -758,11 +758,15 @@ extern int max_by_axis(cudamat* mat, cudamat* target, int axis) {
             return ERROR_INCOMPATIBLE_DIMENSIONS;
 
         kMaxColumnwise<<<w,32>>>(mat->data_device, target->data_device, w, h);
+    } else {
+        if (target->size[1] != 1 || target->size[0] != mat->size[0])
+            return ERROR_INCOMPATIBLE_DIMENSIONS;
 
-        if (SYNC_THREADS)
-            cudaThreadSynchronize();
-    } else
-        return ERROR_UNSUPPORTED;
+        kMaxRowwise<<<h,32>>>(mat->data_device, target->data_device, w, h);
+    }
+
+    if (SYNC_THREADS)
+        cudaThreadSynchronize();
 
     if (checkCUDAError())
         return CUDA_ERROR;

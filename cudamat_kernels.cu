@@ -231,6 +231,33 @@ __global__ void kMaxColumnwise(float* mat, float* target, unsigned int width, un
     }
 }
 
+__global__ void kMaxRowwise(float* mat, float* target, unsigned int width, unsigned int height) {
+    __shared__ float max_vals[32];
+    float cur_max = -FLT_MAX;
+    float val = 0;
+ 
+    for (unsigned int i = threadIdx.x; i < width; i += 32) {
+        val = mat[i * height + blockIdx.x];
+
+        if (val > cur_max)
+            cur_max = val;
+    }
+
+    max_vals[threadIdx.x] = cur_max;
+
+    __syncthreads();
+
+    if (threadIdx.x == 0) {
+        cur_max = -FLT_MAX;
+
+        for (unsigned int i = 0; i < 32; i++)
+            if (max_vals[i] > cur_max)
+                cur_max = max_vals[i];
+
+        target[blockIdx.x] = cur_max;
+    }
+}
+
 __global__ void kSign(float* mat, float* target, unsigned int len) {
     const unsigned int idx = blockIdx.x * blockDim.x + threadIdx.x;
     const unsigned int numThreads = blockDim.x * gridDim.x;
