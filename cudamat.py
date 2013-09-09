@@ -266,6 +266,21 @@ class CUDAMatrix(object):
         if err_code:
             raise generate_exception(err_code)
 
+    def copy(self, include_host = False):
+        """
+        Create a copy of the matrix on GPU. If include_host is True, also
+        creates a copy of the matrix on CPU if there was any.
+        """
+        
+        new_mat = empty(self.shape).assign(self)
+        
+        if include_host and self.mat.on_host:
+            new_mat.numpy_array = self.numpy_array.copy()
+            new_mat.mat.data_host = new_mat.numpy_array.ctypes.data_as(ct.POINTER(ct.c_float))
+            new_mat.mat.on_host = 1
+        
+        return new_mat
+
     def assign(self, val):
         """Assign val to self, where val can be a scalar or a CUDAMatrix
         with the same dimensions as self. """
