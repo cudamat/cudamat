@@ -488,19 +488,30 @@ class CUDAMatrix(object):
 
         return target
         
-    def sum(self, axis, target = None):
+    def sum(self, axis, target = None, mult = 1.):
         """
         Sum the matrix along the given dimension, where 0 represents the leading
         dimension and 1 represents the non-leading dimension. If a target is
-        not prvided, a new vector is created for storing the result.
+        not provided, a new vector is created for storing the result. The result
+        is multiplied by the given factor mult (defaults to 1).
         """
 
-        return sum(self, axis, target)
+        return sum(self, axis, target, mult)
 
-    def add_sums(self, mat, axis, mult = 1.):
+    def mean(self, axis, target = None):
+        """
+        Compute the mean of the matrix along the given dimension, where 0
+        represents the leading dimension and 1 represents the non-leading
+        dimension. If a target is not provided, a new vector is created for
+        storing the result.
+        """
+
+        return mean(self, axis, target)
+
+    def add_sums(self, mat, axis, mult = 1., beta = 1.):
         """
         Add a multiple of the sums of the matrix mat along the given dimension
-        to self. 
+        to self. Self is scaled by beta before adding anything.
         """
 
         m = _cudamat.get_leading_dimension(mat.p_mat)
@@ -517,7 +528,7 @@ class CUDAMatrix(object):
             left = mat
             right = CUDAMatrix.ones.slice(0, n)
 
-        err_code = _cudamat.dot(left.p_mat, right.p_mat, self.p_mat, ct.c_float(1.), ct.c_float(mult))
+        err_code = _cudamat.dot(left.p_mat, right.p_mat, self.p_mat, ct.c_float(beta), ct.c_float(mult))
         if err_code:
             raise generate_exception(err_code)
 
@@ -658,27 +669,25 @@ class CUDAMatrix(object):
 
         return dot(self, mat2, target)
 
-    def add_dot(self, m1, m2):
+    def add_dot(self, m1, m2, mult = 1., beta = 1.):
         """
-        Add the dot product of m1 and m2 to the matrix.
+        Add the dot product of m1 and m2 to the matrix, scaled by mult.
+        Self is scaled by beta before adding anything.
         """
 
-        err_code = _cudamat.dot(m1.p_mat, m2.p_mat, self.p_mat, ct.c_float(1.), ct.c_float(1.))
+        err_code = _cudamat.dot(m1.p_mat, m2.p_mat, self.p_mat, ct.c_float(beta), ct.c_float(mult))
         if err_code:
             raise generate_exception(err_code)
 
         return self
 
-    def subtract_dot(self, m1, m2):
+    def subtract_dot(self, m1, m2, mult = 1., beta = 1.):
         """
-        Subtract the dot product of m1 and m2 from the matrix.
+        Subtract the dot product of m1 and m2 from the matrix, scaled by mult.
+        Self is scaled by beta before subtracting anything.
         """
-
-        err_code = _cudamat.dot(m1.p_mat, m2.p_mat, self.p_mat, ct.c_float(1.), ct.c_float(-1.))
-        if err_code:
-            raise generate_exception(err_code)
-
-        return self
+        
+        return self.add_dot(m1, m2, mult = -1. * mult, beta = beta)
 
     def add_mult(self, mat2, alpha = 1.):
         """
@@ -918,11 +927,12 @@ def empty(shape):
 
     return CUDAMatrix(mat)
 
-def sum(mat, axis, target = None):
+def sum(mat, axis, target = None, mult = 1.):
     """
     Sum the matrix along the given dimension, where 0 represents the leading
     dimension and 1 represents the non-leading dimension. If a target is
-    not prvided, a new vector is created for storing the result.
+    not provided, a new vector is created for storing the result. The result
+    is multiplied by the given factor mult (defaults to 1).
     """
 
     m = _cudamat.get_leading_dimension(mat.p_mat)
@@ -945,15 +955,27 @@ def sum(mat, axis, target = None):
         if not target:
             target = empty((m, 1))
 
-    err_code = _cudamat.dot(left.p_mat, right.p_mat, target.p_mat, ct.c_float(0.), ct.c_float(1.))
+    err_code = _cudamat.dot(left.p_mat, right.p_mat, target.p_mat, ct.c_float(0.), ct.c_float(mult))
     if err_code:
         raise generate_exception(err_code)
 
     return target
 
-def dot(m1, m2, target = None):
+def mean(mat, axis, target = None):
     """
-    Find the dot product between m1 and m2.
+    Compute the mean of the matrix along the given dimension, where 0 represents
+    the leading dimension and 1 represents the non-leading dimension. If a
+    target is not provided, a new vector is created for storing the result.
+    """
+
+    return sum(mat, axis, target = target, mult = 1. / mat.shape[axis])
+
+def dot(m1, m2, target = None, beta = 0., alpha = 1.):
+    """
+    Find the dot product between m1 and m2 and store in target:
+    target = beta*target + alpha*(m1 m2)
+    If no target is given, it will be created automatically, but not
+    initialized -- so beta should be left at its default value zero.
     """
 
     if not target:
@@ -962,7 +984,7 @@ def dot(m1, m2, target = None):
 
         target = empty((m, n))
 
-    err_code = _cudamat.dot(m1.p_mat, m2.p_mat, target.p_mat, ct.c_float(0.), ct.c_float(1.))
+    err_code = _cudamat.dot(m1.p_mat, m2.p_mat, target.p_mat, ct.c_float(beta), ct.c_float(alpha))
     if err_code:
         raise generate_exception(err_code)
 

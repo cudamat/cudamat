@@ -40,10 +40,10 @@ w_w2 = cm.CUDAMatrix(num_hid ** -0.5 * np.random.randn(num_hid, dim_out))
 w_b2 = cm.CUDAMatrix(np.zeros((dim_out, 1)))
 
 # initialize weight update matrices
-wu_w1 = cm.CUDAMatrix(np.zeros(w_w1.shape))
-wu_b1 = cm.CUDAMatrix(np.zeros(w_b1.shape))
-wu_w2 = cm.CUDAMatrix(np.zeros(w_w2.shape))
-wu_b2 = cm.CUDAMatrix(np.zeros(w_b2.shape))
+wu_w1 = cm.empty(w_w1.shape).assign(0)
+wu_b1 = cm.empty(w_b1.shape).assign(0)
+wu_w2 = cm.empty(w_w2.shape).assign(0)
+wu_b2 = cm.empty(w_b2.shape).assign(0)
 
 # initialize temporary storage
 h = cm.empty((num_hid, batch_size))
@@ -61,12 +61,6 @@ for epoch in range(num_epochs):
         inp = dev_train.slice(batch*batch_size,(batch + 1)*batch_size)
         target = dev_lbl.slice(batch*batch_size,(batch + 1)*batch_size)
 
-        # apply momentum
-        wu_w1.mult(momentum)
-        wu_b1.mult(momentum)
-        wu_w2.mult(momentum)
-        wu_b2.mult(momentum)
-
         # forward pass
         cm.dot(w_w1.T, inp, target = h)
 
@@ -82,8 +76,8 @@ for epoch in range(num_epochs):
         out.subtract(target) # compute error
 
         # gradients for w_w2 and w_b2
-        wu_w2.add_dot(h, out.T)
-        wu_b2.add_sums(out, axis = 1)
+        wu_w2.add_dot(h, out.T, beta = momentum)
+        wu_b2.add_sums(out, axis = 1, beta = momentum)
 
         # compute delta
         cm.dot(w_w2, out, target = delta)
@@ -92,8 +86,8 @@ for epoch in range(num_epochs):
         cl.mult_by_sigmoid_deriv(delta, h)
 
         # gradients for w_w1 and w_b1
-        wu_w1.add_dot(inp, delta.T)
-        wu_b1.add_sums(delta, axis = 1)
+        wu_w1.add_dot(inp, delta.T, beta = momentum)
+        wu_b1.add_sums(delta, axis = 1, beta = momentum)
 
         # update weights
         w_w1.subtract_mult(wu_w1, epsilon/batch_size)
