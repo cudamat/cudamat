@@ -9,7 +9,7 @@ from cudamat import generate_exception
 if platform.system() == 'Windows':
     _cudalearn = ct.cdll.LoadLibrary('libcudalearn.dll')
 else:
-    _cudalearn = ct.cdll.LoadLibrary(os.path.join(os.path.dirname(__file__), 'libcudalearn.so'))
+    _cudalearn = ct.cdll.LoadLibrary(os.path.join(os.path.dirname(__file__) or os.path.curdir, 'libcudalearn.so'))
 
 _cudalearn.mult_by_sigmoid_deriv.restype = ct.c_int
 
