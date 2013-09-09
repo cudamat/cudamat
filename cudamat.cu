@@ -1425,10 +1425,12 @@ extern int add_scalar(cudamat* mat, float alpha, cudamat* target) {
 extern float euclid_norm(cudamat* mat, int* err_code) {
     int len = mat->size[0]*mat->size[1];
 
-    float res =  cublasSnrm2(len, mat->data_device, 1);
+    if (!mat->on_device) {
+        *err_code = ERROR_NOT_ON_DEVICE;    
+        return -1.;
+    }
 
-    if (!mat->on_device)
-        return ERROR_NOT_ON_DEVICE;
+    float res = cublasSnrm2(len, mat->data_device, 1);
 
     if (check_cublas_error()) {
         *err_code = CUBLAS_ERROR;
