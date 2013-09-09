@@ -43,7 +43,14 @@ _cudamat.greater_than.restype = ct.c_int
 _cudamat.greater_than_scalar.restype = ct.c_int
 _cudamat.equals.restype = ct.c_int
 _cudamat.equals_scalar.restype = ct.c_int
+_cudamat.minimum.restype = ct.c_int
+_cudamat.minimum_scalar.restype = ct.c_int
+_cudamat.maximum.restype = ct.c_int
+_cudamat.maximum_scalar.restype = ct.c_int
+_cudamat.min_by_axis.restype = ct.c_int
 _cudamat.max_by_axis.restype = ct.c_int
+_cudamat.argmin_by_axis.restype = ct.c_int
+_cudamat.argmax_by_axis.restype = ct.c_int
 _cudamat.sign.restype = ct.c_int
 _cudamat.apply_sigmoid.restype = ct.c_int
 _cudamat.apply_tanh.restype = ct.c_int
@@ -588,6 +595,67 @@ class CUDAMatrix(object):
 
         return target
 
+    def minimum(self, val, target = None):
+        """
+        Perform the element-wise operation target = min(self, val), where
+        val can be a matrix or a scalar.
+        """
+
+        if not target:
+            target = self
+
+        if isinstance(val, (int, float)):
+            err_code = _cudamat.minimum_scalar(self.p_mat, ct.c_float(val), target.p_mat)
+        else:
+            err_code = _cudamat.minimum(self.p_mat, val.p_mat, target.p_mat)
+
+        if err_code:
+            raise generate_exception(err_code)
+
+        return target
+
+    def maximum(self, val, target = None):
+        """
+        Perform the element-wise operation target = max(self, val), where
+        val can be a matrix or a scalar.
+        """
+
+        if not target:
+            target = self
+
+        if isinstance(val, (int, float)):
+            err_code = _cudamat.maximum_scalar(self.p_mat, ct.c_float(val), target.p_mat)
+        else:
+            err_code = _cudamat.maximum(self.p_mat, val.p_mat, target.p_mat)
+
+        if err_code:
+            raise generate_exception(err_code)
+
+        return target
+
+    def min(self, axis, target = None):
+        """
+        Find the minimum value along the given dimension, where 0 represents the
+        leading dimension and 1 represents the non-leading dimension. If a target
+        is not prvided, a new vector is created for storing the result.
+        """
+
+        m, n = self.shape
+
+        if axis == 0:
+            if not target:
+                target = empty((1, n))
+ 
+        elif axis == 1:
+            if not target:
+                target = empty((m, 1))
+
+        err_code =  _cudamat.min_by_axis(self.p_mat, target.p_mat, ct.c_int(axis))
+        if err_code:
+            raise generate_exception(err_code)
+
+        return target
+
     def max(self, axis, target = None):
         """
         Find the maximum value along the given dimension, where 0 represents the
@@ -606,6 +674,54 @@ class CUDAMatrix(object):
                 target = empty((m, 1))
 
         err_code =  _cudamat.max_by_axis(self.p_mat, target.p_mat, ct.c_int(axis))
+        if err_code:
+            raise generate_exception(err_code)
+
+        return target
+
+    def argmin(self, axis, target = None):
+        """
+        Find the index of the minimum value along the given dimension, where 0
+        represents the leading dimension and 1 represents the non-leading
+        dimension. If a target is not provided, a new vector is created for
+        storing the result.
+        """
+
+        m, n = self.shape
+
+        if axis == 0:
+            if not target:
+                target = empty((1, n))
+ 
+        elif axis == 1:
+            if not target:
+                target = empty((m, 1))
+
+        err_code =  _cudamat.argmin_by_axis(self.p_mat, target.p_mat, ct.c_int(axis))
+        if err_code:
+            raise generate_exception(err_code)
+
+        return target
+
+    def argmax(self, axis, target = None):
+        """
+        Find the index of the maximum value along the given dimension, where 0
+        represents the leading dimension and 1 represents the non-leading
+        dimension. If a target is not provided, a new vector is created for
+        storing the result.
+        """
+
+        m, n = self.shape
+
+        if axis == 0:
+            if not target:
+                target = empty((1, n))
+ 
+        elif axis == 1:
+            if not target:
+                target = empty((m, 1))
+
+        err_code =  _cudamat.argmax_by_axis(self.p_mat, target.p_mat, ct.c_int(axis))
         if err_code:
             raise generate_exception(err_code)
 

@@ -38,7 +38,18 @@ __global__ void kGreaterThan(float* mat1, float* mat2, float* target, unsigned i
 __global__ void kGreaterThanScalar(float* mat, float val, float* target, unsigned int len);
 __global__ void kEquals(float* mat1, float* mat2, float* target, unsigned int len);
 __global__ void kEqualsScalar(float* mat, float val, float* target, unsigned int len);
+__global__ void kMinimum(float* mat1, float* mat2, float* target, unsigned int len);
+__global__ void kMinimumScalar(float* mat, float val, float* target, unsigned int len);
+__global__ void kMaximum(float* mat1, float* mat2, float* target, unsigned int len);
+__global__ void kMaximumScalar(float* mat, float val, float* target, unsigned int len);
+__global__ void kMinColumnwise(float* mat, float* target, unsigned int width, unsigned int height);
+__global__ void kMinRowwise(float* mat, float* target, unsigned int width, unsigned int height);
 __global__ void kMaxColumnwise(float* mat, float* target, unsigned int width, unsigned int height);
+__global__ void kMaxRowwise(float* mat, float* target, unsigned int width, unsigned int height);
+__global__ void kArgMinColumnwise(float* mat, float* target, unsigned int width, unsigned int height);
+__global__ void kArgMinRowwise(float* mat, float* target, unsigned int width, unsigned int height);
+__global__ void kArgMaxColumnwise(float* mat, float* target, unsigned int width, unsigned int height);
+__global__ void kArgMaxRowwise(float* mat, float* target, unsigned int width, unsigned int height);
 __global__ void kSign(float* mat, float* target, unsigned int len);
 __global__ void kApplySigmoid(float* mat, float* target, unsigned int len);
 __global__ void kApplyTanh(float* mat, float* target, unsigned int len);
