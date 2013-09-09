@@ -42,6 +42,7 @@ __global__ void kMaxColumnwise(float* mat, float* target, unsigned int width, un
 __global__ void kSign(float* mat, float* target, unsigned int len);
 __global__ void kApplySigmoid(float* mat, float* target, unsigned int len);
 __global__ void kApplyTanh(float* mat, float* target, unsigned int len);
+__global__ void kApplySoftThreshold(float* mat, float alpha, float* target, unsigned int len);
 __global__ void kApplyAbs(float* mat, float* target, unsigned int len);
 __global__ void kApplyLog1PlusExp(float* mat, float* target, unsigned int len);
 __global__ void kLog(float* mat, float* target, unsigned int len);
