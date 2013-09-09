@@ -145,19 +145,21 @@ class CUDAMatrix(object):
     numbers on a GPU.
     """
 
-    def __init__(self, array, copy_to_device = True):
+    def __init__(self, array, copy_to_device = True, copy_on_host = True):
         """
         Initializes a new matrix object in one of two ways. If array is a numpy
         ndarray, memory for a matrix with the same dimensions is allocated on
         the GPU. If the copy_to_device flag is set to True, the GPU matrix is
-        initialized with the given ndarray. If array is not an ndarray, it must
-        be a cudamat structure (typically the user will never use this way of
-        calling __init__).
+        initialized with the given ndarray. If the copy_on_host flag is set to
+        True, a copy of the matrix will be created in host memory even if the
+        matrix is of the correct type (float32, Fortran-contiguous order).
+        If array is not an ndarray, it must be a cudamat structure (typically
+        the user will never use this way of calling __init__).
         """
 
-        if type(array) == np.ndarray:
+        if type(array) in [np.ndarray, np.memmap]:
             # Convert array to float32 in FORTRAN order
-            array = reformat(array)
+            array = reformat(array, copy = copy_on_host)
 
             # Initialize as a ndarray-tied matrix.
             self.mat = cudamat()
@@ -181,7 +183,6 @@ class CUDAMatrix(object):
 
         # Keep a reference to free device memory in case of a crash.
         self.__free_device_memory = _cudamat.free_device_memory
-
 
     def __del__(self):
         try:
@@ -1099,12 +1100,13 @@ def pow(mat, p, target = None):
 def cuda_sync_threads():
     _cudamat.cuda_sync_threads()
 
-def reformat(array):
+def reformat(array, copy = True):
     """
     Returns array as a float32 array in FORTRAN order.
+    If copy is set to False, the array will only be copied if it is not already
+    in the correct format.
     """
-
-    return np.array(array, dtype=np.float32, order='F')
+    return np.array(array, dtype=np.float32, order='F', copy=copy)
 
 def cuda_set_device(dev_id):
     """
