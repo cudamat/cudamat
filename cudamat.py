@@ -7,7 +7,7 @@ MAX_ONES = 1024*256
 if platform.system() == 'Windows':
     _cudamat = ct.cdll.LoadLibrary('libcudamat.dll')
 else:
-    _cudamat = ct.cdll.LoadLibrary(os.path.join(os.path.dirname(__file__), 'libcudamat.so'))
+    _cudamat = ct.cdll.LoadLibrary(os.path.join(os.path.dirname(__file__) or os.path.curdir, 'libcudamat.so'))
 
 _cudamat.get_last_cuda_error.restype = ct.c_char_p
 _cudamat.cublas_init.restype = ct.c_int
@@ -45,10 +45,18 @@ _cudamat.greater_than.restype = ct.c_int
 _cudamat.greater_than_scalar.restype = ct.c_int
 _cudamat.equals.restype = ct.c_int
 _cudamat.equals_scalar.restype = ct.c_int
+_cudamat.minimum.restype = ct.c_int
+_cudamat.minimum_scalar.restype = ct.c_int
+_cudamat.maximum.restype = ct.c_int
+_cudamat.maximum_scalar.restype = ct.c_int
+_cudamat.min_by_axis.restype = ct.c_int
 _cudamat.max_by_axis.restype = ct.c_int
+_cudamat.argmin_by_axis.restype = ct.c_int
+_cudamat.argmax_by_axis.restype = ct.c_int
 _cudamat.sign.restype = ct.c_int
 _cudamat.apply_sigmoid.restype = ct.c_int
 _cudamat.apply_tanh.restype = ct.c_int
+_cudamat.apply_soft_threshold.restype = ct.c_int
 _cudamat.apply_abs.restype = ct.c_int
 _cudamat.apply_log_1_plus_exp.restype = ct.c_int
 _cudamat.apply_log.restype = ct.c_int
@@ -147,19 +155,21 @@ class CUDAMatrix(object):
     numbers on a GPU.
     """
 
-    def __init__(self, array, copy_to_device = True):
+    def __init__(self, array, copy_to_device = True, copy_on_host = True):
         """
         Initializes a new matrix object in one of two ways. If array is a numpy
         ndarray, memory for a matrix with the same dimensions is allocated on
         the GPU. If the copy_to_device flag is set to True, the GPU matrix is
-        initialized with the given ndarray. If array is not an ndarray, it must
-        be a cudamat structure (typically the user will never use this way of
-        calling __init__).
+        initialized with the given ndarray. If the copy_on_host flag is set to
+        True, a copy of the matrix will be created in host memory even if the
+        matrix is of the correct type (float32, Fortran-contiguous order).
+        If array is not an ndarray, it must be a cudamat structure (typically
+        the user will never use this way of calling __init__).
         """
 
-        if type(array) == np.ndarray:
+        if type(array) in [np.ndarray, np.memmap]:
             # Convert array to float32 in FORTRAN order
-            array = reformat(array)
+            array = reformat(array, copy = copy_on_host)
 
             # Initialize as a ndarray-tied matrix.
             self.mat = cudamat()
@@ -183,7 +193,6 @@ class CUDAMatrix(object):
 
         # Keep a reference to free device memory in case of a crash.
         self.__free_device_memory = _cudamat.free_device_memory
-
 
     def __del__(self):
         try:
@@ -224,9 +233,17 @@ class CUDAMatrix(object):
         m = ct.c_uint(shape[0])
         n = ct.c_uint(shape[1])
 
+        # Reshape the default matrix
         err_code = _cudamat.reshape(self.p_mat, m, n)
         if err_code:
             raise generate_exception(err_code)
+        # Reshape the transposed matrix
+        err_code = _cudamat.reshape(self.T.p_mat, m, n)
+        if err_code:
+            raise generate_exception(err_code)
+        # Reshape the CPU matrix
+        if self.mat.on_host:
+            self.numpy_array = np.reshape(self.numpy_array, shape, order='F')
 
         return self
 
@@ -266,6 +283,21 @@ class CUDAMatrix(object):
         err_code = _cudamat.copy_to_host(self.p_mat)
         if err_code:
             raise generate_exception(err_code)
+
+    def copy(self, include_host = False):
+        """
+        Create a copy of the matrix on GPU. If include_host is True, also
+        creates a copy of the matrix on CPU if there was any.
+        """
+        
+        new_mat = empty(self.shape).assign(self)
+        
+        if include_host and self.mat.on_host:
+            new_mat.numpy_array = self.numpy_array.copy()
+            new_mat.mat.data_host = new_mat.numpy_array.ctypes.data_as(ct.POINTER(ct.c_float))
+            new_mat.mat.on_host = 1
+        
+        return new_mat
 
     def assign(self, val):
         """Assign val to self, where val can be a scalar or a CUDAMatrix
@@ -503,19 +535,30 @@ class CUDAMatrix(object):
 
         return target
         
-    def sum(self, axis, target = None):
+    def sum(self, axis, target = None, mult = 1.):
         """
         Sum the matrix along the given dimension, where 0 represents the leading
         dimension and 1 represents the non-leading dimension. If a target is
-        not prvided, a new vector is created for storing the result.
+        not provided, a new vector is created for storing the result. The result
+        is multiplied by the given factor mult (defaults to 1).
         """
 
-        return sum(self, axis, target)
+        return sum(self, axis, target, mult)
 
-    def add_sums(self, mat, axis, mult = 1.):
+    def mean(self, axis, target = None):
+        """
+        Compute the mean of the matrix along the given dimension, where 0
+        represents the leading dimension and 1 represents the non-leading
+        dimension. If a target is not provided, a new vector is created for
+        storing the result.
+        """
+
+        return mean(self, axis, target)
+
+    def add_sums(self, mat, axis, mult = 1., beta = 1.):
         """
         Add a multiple of the sums of the matrix mat along the given dimension
-        to self. 
+        to self. Self is scaled by beta before adding anything.
         """
 
         m = _cudamat.get_leading_dimension(mat.p_mat)
@@ -532,7 +575,7 @@ class CUDAMatrix(object):
             left = mat
             right = CUDAMatrix.ones.slice(0, n)
 
-        err_code = _cudamat.dot(left.p_mat, right.p_mat, self.p_mat, ct.c_float(1.), ct.c_float(mult))
+        err_code = _cudamat.dot(left.p_mat, right.p_mat, self.p_mat, ct.c_float(beta), ct.c_float(mult))
         if err_code:
             raise generate_exception(err_code)
 
@@ -592,6 +635,67 @@ class CUDAMatrix(object):
 
         return target
 
+    def minimum(self, val, target = None):
+        """
+        Perform the element-wise operation target = min(self, val), where
+        val can be a matrix or a scalar.
+        """
+
+        if not target:
+            target = self
+
+        if isinstance(val, (int, float)):
+            err_code = _cudamat.minimum_scalar(self.p_mat, ct.c_float(val), target.p_mat)
+        else:
+            err_code = _cudamat.minimum(self.p_mat, val.p_mat, target.p_mat)
+
+        if err_code:
+            raise generate_exception(err_code)
+
+        return target
+
+    def maximum(self, val, target = None):
+        """
+        Perform the element-wise operation target = max(self, val), where
+        val can be a matrix or a scalar.
+        """
+
+        if not target:
+            target = self
+
+        if isinstance(val, (int, float)):
+            err_code = _cudamat.maximum_scalar(self.p_mat, ct.c_float(val), target.p_mat)
+        else:
+            err_code = _cudamat.maximum(self.p_mat, val.p_mat, target.p_mat)
+
+        if err_code:
+            raise generate_exception(err_code)
+
+        return target
+
+    def min(self, axis, target = None):
+        """
+        Find the minimum value along the given dimension, where 0 represents the
+        leading dimension and 1 represents the non-leading dimension. If a target
+        is not prvided, a new vector is created for storing the result.
+        """
+
+        m, n = self.shape
+
+        if axis == 0:
+            if not target:
+                target = empty((1, n))
+ 
+        elif axis == 1:
+            if not target:
+                target = empty((m, 1))
+
+        err_code =  _cudamat.min_by_axis(self.p_mat, target.p_mat, ct.c_int(axis))
+        if err_code:
+            raise generate_exception(err_code)
+
+        return target
+
     def max(self, axis, target = None):
         """
         Find the maximum value along the given dimension, where 0 represents the
@@ -610,6 +714,54 @@ class CUDAMatrix(object):
                 target = empty((m, 1))
 
         err_code =  _cudamat.max_by_axis(self.p_mat, target.p_mat, ct.c_int(axis))
+        if err_code:
+            raise generate_exception(err_code)
+
+        return target
+
+    def argmin(self, axis, target = None):
+        """
+        Find the index of the minimum value along the given dimension, where 0
+        represents the leading dimension and 1 represents the non-leading
+        dimension. If a target is not provided, a new vector is created for
+        storing the result.
+        """
+
+        m, n = self.shape
+
+        if axis == 0:
+            if not target:
+                target = empty((1, n))
+ 
+        elif axis == 1:
+            if not target:
+                target = empty((m, 1))
+
+        err_code =  _cudamat.argmin_by_axis(self.p_mat, target.p_mat, ct.c_int(axis))
+        if err_code:
+            raise generate_exception(err_code)
+
+        return target
+
+    def argmax(self, axis, target = None):
+        """
+        Find the index of the maximum value along the given dimension, where 0
+        represents the leading dimension and 1 represents the non-leading
+        dimension. If a target is not provided, a new vector is created for
+        storing the result.
+        """
+
+        m, n = self.shape
+
+        if axis == 0:
+            if not target:
+                target = empty((1, n))
+ 
+        elif axis == 1:
+            if not target:
+                target = empty((m, 1))
+
+        err_code =  _cudamat.argmax_by_axis(self.p_mat, target.p_mat, ct.c_int(axis))
         if err_code:
             raise generate_exception(err_code)
 
@@ -636,6 +788,22 @@ class CUDAMatrix(object):
 
         return sigmoid(self, target)
 
+    def apply_tanh(self, target = None):
+        """
+        Apply the tanh to each element of the matrix.
+        """
+
+        return tanh(self, target)
+
+    def apply_soft_threshold(self, alpha, target = None):
+        """
+        Apply the soft threshold function to each element of the matrix:
+
+        x = sign(x) * max(0, abs(x) - alpha)
+        """
+
+        return soft_threshold(self, alpha, target)
+
     def reciprocal(self, target = None):
         """
         Find the reciprocal of each element of the matrix.
@@ -657,27 +825,25 @@ class CUDAMatrix(object):
 
         return dot(self, mat2, target)
 
-    def add_dot(self, m1, m2):
+    def add_dot(self, m1, m2, mult = 1., beta = 1.):
         """
-        Add the dot product of m1 and m2 to the matrix.
+        Add the dot product of m1 and m2 to the matrix, scaled by mult.
+        Self is scaled by beta before adding anything.
         """
 
-        err_code = _cudamat.dot(m1.p_mat, m2.p_mat, self.p_mat, ct.c_float(1.), ct.c_float(1.))
+        err_code = _cudamat.dot(m1.p_mat, m2.p_mat, self.p_mat, ct.c_float(beta), ct.c_float(mult))
         if err_code:
             raise generate_exception(err_code)
 
         return self
 
-    def subtract_dot(self, m1, m2):
+    def subtract_dot(self, m1, m2, mult = 1., beta = 1.):
         """
-        Subtract the dot product of m1 and m2 from the matrix.
+        Subtract the dot product of m1 and m2 from the matrix, scaled by mult.
+        Self is scaled by beta before subtracting anything.
         """
-
-        err_code = _cudamat.dot(m1.p_mat, m2.p_mat, self.p_mat, ct.c_float(1.), ct.c_float(-1.))
-        if err_code:
-            raise generate_exception(err_code)
-
-        return self
+        
+        return self.add_dot(m1, m2, mult = -1. * mult, beta = beta)
 
     def add_mult(self, mat2, alpha = 1.):
         """
@@ -917,11 +1083,12 @@ def empty(shape):
 
     return CUDAMatrix(mat)
 
-def sum(mat, axis, target = None):
+def sum(mat, axis, target = None, mult = 1.):
     """
     Sum the matrix along the given dimension, where 0 represents the leading
     dimension and 1 represents the non-leading dimension. If a target is
-    not prvided, a new vector is created for storing the result.
+    not provided, a new vector is created for storing the result. The result
+    is multiplied by the given factor mult (defaults to 1).
     """
 
     m = _cudamat.get_leading_dimension(mat.p_mat)
@@ -944,15 +1111,27 @@ def sum(mat, axis, target = None):
         if not target:
             target = empty((m, 1))
 
-    err_code = _cudamat.dot(left.p_mat, right.p_mat, target.p_mat, ct.c_float(0.), ct.c_float(1.))
+    err_code = _cudamat.dot(left.p_mat, right.p_mat, target.p_mat, ct.c_float(0.), ct.c_float(mult))
     if err_code:
         raise generate_exception(err_code)
 
     return target
 
-def dot(m1, m2, target = None):
+def mean(mat, axis, target = None):
     """
-    Find the dot product between m1 and m2.
+    Compute the mean of the matrix along the given dimension, where 0 represents
+    the leading dimension and 1 represents the non-leading dimension. If a
+    target is not provided, a new vector is created for storing the result.
+    """
+
+    return sum(mat, axis, target = target, mult = 1. / mat.shape[axis])
+
+def dot(m1, m2, target = None, beta = 0., alpha = 1.):
+    """
+    Find the dot product between m1 and m2 and store in target:
+    target = beta*target + alpha*(m1 m2)
+    If no target is given, it will be created automatically, but not
+    initialized -- so beta should be left at its default value zero.
     """
 
     if not target:
@@ -961,7 +1140,7 @@ def dot(m1, m2, target = None):
 
         target = empty((m, n))
 
-    err_code = _cudamat.dot(m1.p_mat, m2.p_mat, target.p_mat, ct.c_float(0.), ct.c_float(1.))
+    err_code = _cudamat.dot(m1.p_mat, m2.p_mat, target.p_mat, ct.c_float(beta), ct.c_float(alpha))
     if err_code:
         raise generate_exception(err_code)
 
@@ -1003,6 +1182,22 @@ def tanh(mat, target = None):
         target = mat
 
     err_code = _cudamat.apply_tanh(mat.p_mat, target.p_mat)
+    if err_code:
+        raise generate_exception(err_code)
+
+    return target
+
+def soft_threshold(mat, alpha, target = None):
+    """
+    Apply the soft threshold function to each element of the matrix:
+
+    mat = sign(mat) * max(0, abs(mat) - alpha)
+    """
+
+    if not target:
+        target = mat
+
+    err_code = _cudamat.apply_soft_threshold(mat.p_mat, ct.c_float(alpha), target.p_mat)
     if err_code:
         raise generate_exception(err_code)
 
@@ -1131,12 +1326,13 @@ def pow(mat, p, target = None):
 def cuda_sync_threads():
     _cudamat.cuda_sync_threads()
 
-def reformat(array):
+def reformat(array, copy = True):
     """
     Returns array as a float32 array in FORTRAN order.
+    If copy is set to False, the array will only be copied if it is not already
+    in the correct format.
     """
-
-    return np.array(array, dtype=np.float32, order='F')
+    return np.array(array, dtype=np.float32, order='F', copy=copy)
 
 def cuda_set_device(dev_id):
     """
