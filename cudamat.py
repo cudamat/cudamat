@@ -263,7 +263,7 @@ class CUDAMatrix(object):
         err_code = _cudamat.copy_to_host(self.p_mat)
         if err_code:
             raise generate_exception(err_code)
-    
+
     def assign(self, val):
         """Assign val to self, where val can be a scalar or a CUDAMatrix
         with the same dimensions as self. """
