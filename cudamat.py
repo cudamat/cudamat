@@ -331,7 +331,12 @@ class CUDAMatrix(object):
 
         _cudamat.set_transpose(self.p_mat, ct.c_int(1 * is_trans))
 
-    def slice(self, first_col, last_col):
+    def slice(self, first_col, last_col, include_host = False):
+        """
+        Creates a view into a consecutive range of columns of an existing
+        matrix on GPU. If include_host is set to True, also creates a view
+        into the CPU copy of the matrix (i.e., the numpy_array).
+        """
         mat = cudamat()
 
         if self.mat.size[0] == 1 or self.mat.size[1] == 1:
@@ -349,9 +354,20 @@ class CUDAMatrix(object):
         except:
             new_mat.sliceof = self
 
+        # reproduce the slice on the host as well (if requested)        
+        if include_host and self.mat.on_host:
+            new_mat.numpy_array = self.numpy_array[:, first_col:last_col]
+            new_mat.mat.data_host = new_mat.numpy_array.ctypes.data_as(ct.POINTER(ct.c_float))
+            new_mat.mat.on_host = 1
+
         return new_mat
 
     def get_col_slice(self, first_col, last_col, target = None):
+        """
+        Get the columns with indices first_col through last_col. If a target
+        is provided, columns are copied into the target. Otherwise, returns a
+        view into the existing memory on GPU.
+        """
         col_slice = self.slice(first_col, last_col)
 
         if target:
@@ -361,6 +377,10 @@ class CUDAMatrix(object):
             return col_slice
 
     def set_col_slice(self, first_col, last_col, mat):
+        """
+        Assign the contents of mat to the columns with indices first_col
+        through last_col.
+        """
         self.slice(first_col, last_col).assign(mat)
 
         return self
