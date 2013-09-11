@@ -36,6 +36,8 @@ _cudamat.add_col_mult.restype = ct.c_int
 _cudamat.add_row_vec.restype = ct.c_int
 _cudamat.mult_by_col_vec.restype = ct.c_int
 _cudamat.mult_by_row_vec.restype = ct.c_int
+_cudamat.divide_by_col_vec.restype = ct.c_int
+_cudamat.divide_by_row_vec.restype = ct.c_int
 
 _cudamat.less_than.restype = ct.c_int
 _cudamat.less_than_scalar.restype = ct.c_int
@@ -498,6 +500,36 @@ class CUDAMatrix(object):
             target = self
 
         err_code = _cudamat.mult_by_row_vec(self.p_mat, vec.p_mat, target.p_mat)
+        if err_code:
+            raise generate_exception(err_code)
+
+        return target
+        
+    def div_by_col(self, vec, target = None):
+        """
+        Divide every column of the matrix by vector vec. If a target is
+        provided, it is used to store the result instead of self.
+        """
+
+        if not target:
+            target = self
+
+        err_code = _cudamat.divide_by_col_vec(self.p_mat, vec.p_mat, target.p_mat)
+        if err_code:
+            raise generate_exception(err_code)
+
+        return target
+        
+    def div_by_row(self, vec, target = None):
+        """
+        Divide every row of the matrix by vector vec. If a target is
+        provided, it is used to store the result instead of self.
+        """
+
+        if not target:
+            target = self
+
+        err_code = _cudamat.divide_by_row_vec(self.p_mat, vec.p_mat, target.p_mat)
         if err_code:
             raise generate_exception(err_code)
 

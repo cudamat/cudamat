@@ -514,6 +514,56 @@ extern int mult_by_row_vec(cudamat* mat, cudamat* vec, cudamat* target) {
     return 0;
 }
 
+extern int divide_by_col_vec(cudamat* mat, cudamat* vec, cudamat* target) {
+    unsigned int h = mat->size[0],
+                 w = mat->size[1];
+
+    if (!mat->on_device || !vec->on_device)
+        return ERROR_NOT_ON_DEVICE;
+
+    if (mat->is_trans)
+        return ERROR_TRANSPOSED;
+
+    if (mat->size[0] != vec->size[0] || vec->size[1] != 1 ||
+        mat->size[0] != target->size[0] || mat->size[1] != target->size[1])
+        return ERROR_INCOMPATIBLE_DIMENSIONS;
+
+    kDivByColVector<<<NUM_VECTOR_OP_BLOCKS,NUM_VECTOR_OP_THREADS_PER_BLOCK>>>(mat->data_device, vec->data_device, target->data_device, w, h);
+
+    if (SYNC_THREADS)
+        cudaThreadSynchronize();
+
+    if (checkCUDAError())
+        return CUDA_ERROR;
+
+    return 0;
+}
+
+extern int divide_by_row_vec(cudamat* mat, cudamat* vec, cudamat* target) {
+    unsigned int h = mat->size[0],
+                 w = mat->size[1];
+
+    if (!mat->on_device || !vec->on_device)
+        return ERROR_NOT_ON_DEVICE;
+
+    if (mat->is_trans)
+        return ERROR_TRANSPOSED;
+
+    if (mat->size[1] != vec->size[1] || vec->size[0] != 1 ||
+        mat->size[0] != target->size[0] || mat->size[1] != target->size[1])
+        return ERROR_INCOMPATIBLE_DIMENSIONS;
+
+    kDivByRowVector<<<NUM_VECTOR_OP_BLOCKS,NUM_VECTOR_OP_THREADS_PER_BLOCK>>>(mat->data_device, vec->data_device, target->data_device, w, h);
+
+    if (SYNC_THREADS)
+        cudaThreadSynchronize();
+
+    if (checkCUDAError())
+        return CUDA_ERROR;
+
+    return 0;
+}
+
 extern int less_than(cudamat* mat1, cudamat* mat2, cudamat* target) {
     int len = mat1->size[0]*mat1->size[1];
 
