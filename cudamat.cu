@@ -402,7 +402,7 @@ extern int add_col_vec(cudamat* mat, cudamat* vec, cudamat* target) {
         mat->size[0] != target->size[0] || mat->size[1] != target->size[1])
         return ERROR_INCOMPATIBLE_DIMENSIONS;
 
-    kAddColVector<<<NUM_VECTOR_OP_BLOCKS,NUM_VECTOR_OP_THREADS_PER_BLOCK>>>(mat->data_device, vec->data_device, target->data_device, w, h);
+    kAddColVector<<<NUM_VECTOR_OP_BLOCKS(w*h),NUM_VECTOR_OP_THREADS_PER_BLOCK(w*h)>>>(mat->data_device, vec->data_device, target->data_device, w, h);
 
     if (SYNC_THREADS)
         cudaThreadSynchronize();
@@ -428,7 +428,7 @@ extern int add_col_mult(cudamat* mat, cudamat* vec, cudamat* target, float mult)
         mat->size[0] != target->size[0] || mat->size[1] != target->size[1])
         return ERROR_INCOMPATIBLE_DIMENSIONS;
 
-    kAddColMult<<<NUM_VECTOR_OP_BLOCKS,NUM_VECTOR_OP_THREADS_PER_BLOCK>>>(mat->data_device, vec->data_device, target->data_device, mult, w, h);
+    kAddColMult<<<NUM_VECTOR_OP_BLOCKS(w*h),NUM_VECTOR_OP_THREADS_PER_BLOCK(w*h)>>>(mat->data_device, vec->data_device, target->data_device, mult, w, h);
 
     if (SYNC_THREADS)
         cudaThreadSynchronize();
@@ -453,7 +453,7 @@ extern int add_row_vec(cudamat* mat, cudamat* vec, cudamat* target) {
         mat->size[0] != target->size[0] || mat->size[1] != target->size[1])
         return ERROR_INCOMPATIBLE_DIMENSIONS;
 
-    kAddRowVector<<<NUM_VECTOR_OP_BLOCKS,NUM_VECTOR_OP_THREADS_PER_BLOCK>>>(mat->data_device, vec->data_device, target->data_device, w, h);
+    kAddRowVector<<<NUM_VECTOR_OP_BLOCKS(w*h),NUM_VECTOR_OP_THREADS_PER_BLOCK(w*h)>>>(mat->data_device, vec->data_device, target->data_device, w, h);
 
     if (SYNC_THREADS)
         cudaThreadSynchronize();
@@ -478,7 +478,7 @@ extern int mult_by_col_vec(cudamat* mat, cudamat* vec, cudamat* target) {
         mat->size[0] != target->size[0] || mat->size[1] != target->size[1])
         return ERROR_INCOMPATIBLE_DIMENSIONS;
 
-    kMultByColVector<<<NUM_VECTOR_OP_BLOCKS,NUM_VECTOR_OP_THREADS_PER_BLOCK>>>(mat->data_device, vec->data_device, target->data_device, w, h);
+    kMultByColVector<<<NUM_VECTOR_OP_BLOCKS(w*h),NUM_VECTOR_OP_THREADS_PER_BLOCK(w*h)>>>(mat->data_device, vec->data_device, target->data_device, w, h);
 
     if (SYNC_THREADS)
         cudaThreadSynchronize();
@@ -503,7 +503,7 @@ extern int mult_by_row_vec(cudamat* mat, cudamat* vec, cudamat* target) {
         mat->size[0] != target->size[0] || mat->size[1] != target->size[1])
         return ERROR_INCOMPATIBLE_DIMENSIONS;
 
-    kMultByRowVector<<<NUM_VECTOR_OP_BLOCKS,NUM_VECTOR_OP_THREADS_PER_BLOCK>>>(mat->data_device, vec->data_device, target->data_device, w, h);
+    kMultByRowVector<<<NUM_VECTOR_OP_BLOCKS(w*h),NUM_VECTOR_OP_THREADS_PER_BLOCK(w*h)>>>(mat->data_device, vec->data_device, target->data_device, w, h);
 
     if (SYNC_THREADS)
         cudaThreadSynchronize();
@@ -528,7 +528,7 @@ extern int divide_by_col_vec(cudamat* mat, cudamat* vec, cudamat* target) {
         mat->size[0] != target->size[0] || mat->size[1] != target->size[1])
         return ERROR_INCOMPATIBLE_DIMENSIONS;
 
-    kDivByColVector<<<NUM_VECTOR_OP_BLOCKS,NUM_VECTOR_OP_THREADS_PER_BLOCK>>>(mat->data_device, vec->data_device, target->data_device, w, h);
+    kDivByColVector<<<NUM_VECTOR_OP_BLOCKS(w*h),NUM_VECTOR_OP_THREADS_PER_BLOCK(w*h)>>>(mat->data_device, vec->data_device, target->data_device, w, h);
 
     if (SYNC_THREADS)
         cudaThreadSynchronize();
@@ -553,7 +553,7 @@ extern int divide_by_row_vec(cudamat* mat, cudamat* vec, cudamat* target) {
         mat->size[0] != target->size[0] || mat->size[1] != target->size[1])
         return ERROR_INCOMPATIBLE_DIMENSIONS;
 
-    kDivByRowVector<<<NUM_VECTOR_OP_BLOCKS,NUM_VECTOR_OP_THREADS_PER_BLOCK>>>(mat->data_device, vec->data_device, target->data_device, w, h);
+    kDivByRowVector<<<NUM_VECTOR_OP_BLOCKS(w*h),NUM_VECTOR_OP_THREADS_PER_BLOCK(w*h)>>>(mat->data_device, vec->data_device, target->data_device, w, h);
 
     if (SYNC_THREADS)
         cudaThreadSynchronize();
@@ -577,7 +577,7 @@ extern int less_than(cudamat* mat1, cudamat* mat2, cudamat* target) {
         mat1->size[0] != target->size[0] || mat1->size[1] != target->size[1])
         return ERROR_INCOMPATIBLE_DIMENSIONS;
 
-    kLessThan<<<NUM_VECTOR_OP_BLOCKS,NUM_VECTOR_OP_THREADS_PER_BLOCK>>>(mat1->data_device, mat2->data_device, target->data_device, len);
+    kLessThan<<<NUM_VECTOR_OP_BLOCKS(len),NUM_VECTOR_OP_THREADS_PER_BLOCK(len)>>>(mat1->data_device, mat2->data_device, target->data_device, len);
 
     if (SYNC_THREADS)
         cudaThreadSynchronize();
@@ -600,7 +600,7 @@ extern int less_than_scalar(cudamat* mat, float val, cudamat* target) {
     if (mat->size[0] != target->size[0] || mat->size[1] != target->size[1])
         return ERROR_INCOMPATIBLE_DIMENSIONS;
 
-    kLessThanScalar<<<NUM_VECTOR_OP_BLOCKS,NUM_VECTOR_OP_THREADS_PER_BLOCK>>>(mat->data_device, val, target->data_device, len);
+    kLessThanScalar<<<NUM_VECTOR_OP_BLOCKS(len),NUM_VECTOR_OP_THREADS_PER_BLOCK(len)>>>(mat->data_device, val, target->data_device, len);
 
     if (SYNC_THREADS)
         cudaThreadSynchronize();
@@ -624,7 +624,7 @@ extern int greater_than(cudamat* mat1, cudamat* mat2, cudamat* target) {
         mat1->size[0] != target->size[0] || mat1->size[1] != target->size[1])
         return ERROR_INCOMPATIBLE_DIMENSIONS;
 
-    kGreaterThan<<<NUM_VECTOR_OP_BLOCKS,NUM_VECTOR_OP_THREADS_PER_BLOCK>>>(mat1->data_device, mat2->data_device, target->data_device, len);
+    kGreaterThan<<<NUM_VECTOR_OP_BLOCKS(len),NUM_VECTOR_OP_THREADS_PER_BLOCK(len)>>>(mat1->data_device, mat2->data_device, target->data_device, len);
 
     if (SYNC_THREADS)
         cudaThreadSynchronize();
@@ -647,7 +647,7 @@ extern int greater_than_scalar(cudamat* mat, float val, cudamat* target) {
     if (mat->size[0] != target->size[0] || mat->size[1] != target->size[1])
         return ERROR_INCOMPATIBLE_DIMENSIONS;
 
-    kGreaterThanScalar<<<NUM_VECTOR_OP_BLOCKS,NUM_VECTOR_OP_THREADS_PER_BLOCK>>>(mat->data_device, val, target->data_device, len);
+    kGreaterThanScalar<<<NUM_VECTOR_OP_BLOCKS(len),NUM_VECTOR_OP_THREADS_PER_BLOCK(len)>>>(mat->data_device, val, target->data_device, len);
 
     if (SYNC_THREADS)
         cudaThreadSynchronize();
@@ -671,7 +671,7 @@ extern int equals(cudamat* mat1, cudamat* mat2, cudamat* target) {
         mat1->size[0] != target->size[0] || mat1->size[1] != target->size[1])
         return ERROR_INCOMPATIBLE_DIMENSIONS;
 
-    kEquals<<<NUM_VECTOR_OP_BLOCKS,NUM_VECTOR_OP_THREADS_PER_BLOCK>>>(mat1->data_device, mat2->data_device, target->data_device, len);
+    kEquals<<<NUM_VECTOR_OP_BLOCKS(len),NUM_VECTOR_OP_THREADS_PER_BLOCK(len)>>>(mat1->data_device, mat2->data_device, target->data_device, len);
 
     if (SYNC_THREADS)
         cudaThreadSynchronize();
@@ -694,7 +694,7 @@ extern int equals_scalar(cudamat* mat, float val, cudamat* target) {
     if (mat->size[0] != target->size[0] || mat->size[1] != target->size[1])
         return ERROR_INCOMPATIBLE_DIMENSIONS;
 
-    kEqualsScalar<<<NUM_VECTOR_OP_BLOCKS,NUM_VECTOR_OP_THREADS_PER_BLOCK>>>(mat->data_device, val, target->data_device, len);
+    kEqualsScalar<<<NUM_VECTOR_OP_BLOCKS(len),NUM_VECTOR_OP_THREADS_PER_BLOCK(len)>>>(mat->data_device, val, target->data_device, len);
 
     if (SYNC_THREADS)
         cudaThreadSynchronize();
@@ -718,7 +718,7 @@ extern int minimum(cudamat* mat1, cudamat* mat2, cudamat* target) {
         mat1->size[0] != target->size[0] || mat1->size[1] != target->size[1])
         return ERROR_INCOMPATIBLE_DIMENSIONS;
 
-    kMinimum<<<NUM_VECTOR_OP_BLOCKS,NUM_VECTOR_OP_THREADS_PER_BLOCK>>>(mat1->data_device, mat2->data_device, target->data_device, len);
+    kMinimum<<<NUM_VECTOR_OP_BLOCKS(len),NUM_VECTOR_OP_THREADS_PER_BLOCK(len)>>>(mat1->data_device, mat2->data_device, target->data_device, len);
 
     cudaThreadSynchronize();
 
@@ -740,7 +740,7 @@ extern int minimum_scalar(cudamat* mat, float val, cudamat* target) {
     if (mat->size[0] != target->size[0] || mat->size[1] != target->size[1])
         return ERROR_INCOMPATIBLE_DIMENSIONS;
 
-    kMinimumScalar<<<NUM_VECTOR_OP_BLOCKS,NUM_VECTOR_OP_THREADS_PER_BLOCK>>>(mat->data_device, val, target->data_device, len);
+    kMinimumScalar<<<NUM_VECTOR_OP_BLOCKS(len),NUM_VECTOR_OP_THREADS_PER_BLOCK(len)>>>(mat->data_device, val, target->data_device, len);
 
     cudaThreadSynchronize();
 
@@ -763,7 +763,7 @@ extern int maximum(cudamat* mat1, cudamat* mat2, cudamat* target) {
         mat1->size[0] != target->size[0] || mat1->size[1] != target->size[1])
         return ERROR_INCOMPATIBLE_DIMENSIONS;
 
-    kMaximum<<<NUM_VECTOR_OP_BLOCKS,NUM_VECTOR_OP_THREADS_PER_BLOCK>>>(mat1->data_device, mat2->data_device, target->data_device, len);
+    kMaximum<<<NUM_VECTOR_OP_BLOCKS(len),NUM_VECTOR_OP_THREADS_PER_BLOCK(len)>>>(mat1->data_device, mat2->data_device, target->data_device, len);
 
     cudaThreadSynchronize();
 
@@ -785,7 +785,7 @@ extern int maximum_scalar(cudamat* mat, float val, cudamat* target) {
     if (mat->size[0] != target->size[0] || mat->size[1] != target->size[1])
         return ERROR_INCOMPATIBLE_DIMENSIONS;
 
-    kMaximumScalar<<<NUM_VECTOR_OP_BLOCKS,NUM_VECTOR_OP_THREADS_PER_BLOCK>>>(mat->data_device, val, target->data_device, len);
+    kMaximumScalar<<<NUM_VECTOR_OP_BLOCKS(len),NUM_VECTOR_OP_THREADS_PER_BLOCK(len)>>>(mat->data_device, val, target->data_device, len);
 
     cudaThreadSynchronize();
 
@@ -931,7 +931,7 @@ extern int sign(cudamat* mat, cudamat* target) {
     if (mat->size[0] != target->size[0] || mat->size[1] != target->size[1])
         return ERROR_INCOMPATIBLE_DIMENSIONS;
 
-    kSign<<<NUM_VECTOR_OP_BLOCKS,NUM_VECTOR_OP_THREADS_PER_BLOCK>>>(mat->data_device, target->data_device, len);
+    kSign<<<NUM_VECTOR_OP_BLOCKS(len),NUM_VECTOR_OP_THREADS_PER_BLOCK(len)>>>(mat->data_device, target->data_device, len);
 
     if (SYNC_THREADS)
         cudaThreadSynchronize();
@@ -951,7 +951,7 @@ extern int apply_sigmoid(cudamat* mat, cudamat* target) {
     if (mat->size[0] != target->size[0] || mat->size[1] != target->size[1])
         return ERROR_INCOMPATIBLE_DIMENSIONS;
 
-    kApplySigmoid<<<NUM_VECTOR_OP_BLOCKS,NUM_VECTOR_OP_THREADS_PER_BLOCK>>>(mat->data_device, target->data_device, len);
+    kApplySigmoid<<<NUM_VECTOR_OP_BLOCKS(len),NUM_VECTOR_OP_THREADS_PER_BLOCK(len)>>>(mat->data_device, target->data_device, len);
 
     if (SYNC_THREADS)
         cudaThreadSynchronize();
@@ -971,7 +971,7 @@ extern int apply_tanh(cudamat* mat, cudamat* target) {
     if (mat->size[0] != target->size[0] || mat->size[1] != target->size[1])
         return ERROR_INCOMPATIBLE_DIMENSIONS;
 
-    kApplyTanh<<<NUM_VECTOR_OP_BLOCKS,NUM_VECTOR_OP_THREADS_PER_BLOCK>>>(mat->data_device, target->data_device, len);
+    kApplyTanh<<<NUM_VECTOR_OP_BLOCKS(len),NUM_VECTOR_OP_THREADS_PER_BLOCK(len)>>>(mat->data_device, target->data_device, len);
 
     if (SYNC_THREADS)
         cudaThreadSynchronize();
@@ -991,7 +991,7 @@ extern int apply_soft_threshold(cudamat* mat, float alpha, cudamat* target) {
     if (mat->size[0] != target->size[0] || mat->size[1] != target->size[1])
         return ERROR_INCOMPATIBLE_DIMENSIONS;
 
-    kApplySoftThreshold<<<NUM_VECTOR_OP_BLOCKS,NUM_VECTOR_OP_THREADS_PER_BLOCK>>>(mat->data_device, alpha, target->data_device, len);
+    kApplySoftThreshold<<<NUM_VECTOR_OP_BLOCKS(len),NUM_VECTOR_OP_THREADS_PER_BLOCK(len)>>>(mat->data_device, alpha, target->data_device, len);
 
     cudaThreadSynchronize();
 
@@ -1010,7 +1010,7 @@ extern int apply_abs(cudamat* mat, cudamat* target) {
     if (mat->size[0] != target->size[0] || mat->size[1] != target->size[1])
         return ERROR_INCOMPATIBLE_DIMENSIONS;
 
-    kApplyAbs<<<NUM_VECTOR_OP_BLOCKS,NUM_VECTOR_OP_THREADS_PER_BLOCK>>>(mat->data_device, target->data_device, len);
+    kApplyAbs<<<NUM_VECTOR_OP_BLOCKS(len),NUM_VECTOR_OP_THREADS_PER_BLOCK(len)>>>(mat->data_device, target->data_device, len);
 
     if (SYNC_THREADS)
         cudaThreadSynchronize();
@@ -1030,7 +1030,7 @@ extern int apply_log_1_plus_exp(cudamat* mat, cudamat* target) {
     if (mat->size[0] != target->size[0] || mat->size[1] != target->size[1])
         return ERROR_INCOMPATIBLE_DIMENSIONS;
 
-    kApplyLog1PlusExp<<<NUM_VECTOR_OP_BLOCKS,NUM_VECTOR_OP_THREADS_PER_BLOCK>>>(mat->data_device, target->data_device, len);
+    kApplyLog1PlusExp<<<NUM_VECTOR_OP_BLOCKS(len),NUM_VECTOR_OP_THREADS_PER_BLOCK(len)>>>(mat->data_device, target->data_device, len);
 
     if (SYNC_THREADS)
         cudaThreadSynchronize();
@@ -1050,7 +1050,7 @@ extern int apply_log(cudamat* mat, cudamat* target) {
     if (mat->size[0] != target->size[0] || mat->size[1] != target->size[1])
         return ERROR_INCOMPATIBLE_DIMENSIONS;
 
-    kLog<<<NUM_VECTOR_OP_BLOCKS,NUM_VECTOR_OP_THREADS_PER_BLOCK>>>(mat->data_device, target->data_device, len);
+    kLog<<<NUM_VECTOR_OP_BLOCKS(len),NUM_VECTOR_OP_THREADS_PER_BLOCK(len)>>>(mat->data_device, target->data_device, len);
 
     if (SYNC_THREADS)
         cudaThreadSynchronize();
@@ -1070,7 +1070,7 @@ extern int apply_exp(cudamat* mat, cudamat* target) {
     if (mat->size[0] != target->size[0] || mat->size[1] != target->size[1])
         return ERROR_INCOMPATIBLE_DIMENSIONS;
 
-    kExp<<<NUM_VECTOR_OP_BLOCKS,NUM_VECTOR_OP_THREADS_PER_BLOCK>>>(mat->data_device, target->data_device, len);
+    kExp<<<NUM_VECTOR_OP_BLOCKS(len),NUM_VECTOR_OP_THREADS_PER_BLOCK(len)>>>(mat->data_device, target->data_device, len);
 
     if (SYNC_THREADS)
         cudaThreadSynchronize();
@@ -1090,7 +1090,7 @@ extern int apply_gamma(cudamat* mat, cudamat* target) {
     if (mat->size[0] != target->size[0] || mat->size[1] != target->size[1])
         return ERROR_INCOMPATIBLE_DIMENSIONS;
 
-    kGamma<<<NUM_VECTOR_OP_BLOCKS,NUM_VECTOR_OP_THREADS_PER_BLOCK>>>(mat->data_device, target->data_device, len);
+    kGamma<<<NUM_VECTOR_OP_BLOCKS(len),NUM_VECTOR_OP_THREADS_PER_BLOCK(len)>>>(mat->data_device, target->data_device, len);
 
     if (SYNC_THREADS)
         cudaThreadSynchronize();
@@ -1110,7 +1110,7 @@ extern int apply_lgamma(cudamat* mat, cudamat* target) {
     if (mat->size[0] != target->size[0] || mat->size[1] != target->size[1])
         return ERROR_INCOMPATIBLE_DIMENSIONS;
 
-    kLogGamma<<<NUM_VECTOR_OP_BLOCKS,NUM_VECTOR_OP_THREADS_PER_BLOCK>>>(mat->data_device, target->data_device, len);
+    kLogGamma<<<NUM_VECTOR_OP_BLOCKS(len),NUM_VECTOR_OP_THREADS_PER_BLOCK(len)>>>(mat->data_device, target->data_device, len);
 
     if (SYNC_THREADS)
         cudaThreadSynchronize();
@@ -1130,7 +1130,7 @@ extern int apply_sqrt(cudamat* mat, cudamat* target) {
     if (mat->size[0] != target->size[0] || mat->size[1] != target->size[1])
         return ERROR_INCOMPATIBLE_DIMENSIONS;
 
-    kSqrt<<<NUM_VECTOR_OP_BLOCKS,NUM_VECTOR_OP_THREADS_PER_BLOCK>>>(mat->data_device, target->data_device, len);
+    kSqrt<<<NUM_VECTOR_OP_BLOCKS(len),NUM_VECTOR_OP_THREADS_PER_BLOCK(len)>>>(mat->data_device, target->data_device, len);
 
     if (SYNC_THREADS)
         cudaThreadSynchronize();
@@ -1150,7 +1150,7 @@ extern int apply_pow(cudamat* mat, float pow, cudamat* target) {
     if (mat->size[0] != target->size[0] || mat->size[1] != target->size[1])
         return ERROR_INCOMPATIBLE_DIMENSIONS;
 
-    kPow<<<NUM_VECTOR_OP_BLOCKS,NUM_VECTOR_OP_THREADS_PER_BLOCK>>>(mat->data_device, pow, target->data_device, len);
+    kPow<<<NUM_VECTOR_OP_BLOCKS(len),NUM_VECTOR_OP_THREADS_PER_BLOCK(len)>>>(mat->data_device, pow, target->data_device, len);
 
     if (SYNC_THREADS)
         cudaThreadSynchronize();
@@ -1173,7 +1173,7 @@ extern int apply_pow_matrix(cudamat* mat, cudamat* pow, cudamat* target) {
     if (mat->size[0] != pow->size[0] || mat->size[1] != pow->size[1])
         return ERROR_INCOMPATIBLE_DIMENSIONS;
 
-    kPowMatrix<<<NUM_VECTOR_OP_BLOCKS,NUM_VECTOR_OP_THREADS_PER_BLOCK>>>(mat->data_device, pow->data_device, target->data_device, len);
+    kPowMatrix<<<NUM_VECTOR_OP_BLOCKS(len),NUM_VECTOR_OP_THREADS_PER_BLOCK(len)>>>(mat->data_device, pow->data_device, target->data_device, len);
 
     if (SYNC_THREADS)
         cudaThreadSynchronize();
@@ -1193,7 +1193,7 @@ extern int reciprocal(cudamat* mat, cudamat* target) {
     if (mat->size[0] != target->size[0] || mat->size[1] != target->size[1])
         return ERROR_INCOMPATIBLE_DIMENSIONS;
 
-    kReciprocal<<<NUM_VECTOR_OP_BLOCKS,NUM_VECTOR_OP_THREADS_PER_BLOCK>>>(mat->data_device, target->data_device, len);
+    kReciprocal<<<NUM_VECTOR_OP_BLOCKS(len),NUM_VECTOR_OP_THREADS_PER_BLOCK(len)>>>(mat->data_device, target->data_device, len);
 
     if (SYNC_THREADS)
         cudaThreadSynchronize();
@@ -1302,7 +1302,7 @@ extern int add_elementwise(cudamat* mat1, cudamat* mat2, cudamat* target) {
             return CUBLAS_ERROR;
 
     } else {
-        kAdd<<<NUM_VECTOR_OP_BLOCKS,NUM_VECTOR_OP_THREADS_PER_BLOCK>>>(mat1->data_device, mat2->data_device, target->data_device, len);
+        kAdd<<<NUM_VECTOR_OP_BLOCKS(len),NUM_VECTOR_OP_THREADS_PER_BLOCK(len)>>>(mat1->data_device, mat2->data_device, target->data_device, len);
  
         if (SYNC_THREADS)
             cudaThreadSynchronize();
@@ -1327,7 +1327,7 @@ extern int subtract_elementwise(cudamat* mat1, cudamat* mat2, cudamat* target) {
         mat1->size[0] != target->size[0] || mat1->size[1] != target->size[1])
         return ERROR_INCOMPATIBLE_DIMENSIONS;
 
-    kSubtract<<<NUM_VECTOR_OP_BLOCKS,NUM_VECTOR_OP_THREADS_PER_BLOCK>>>(mat1->data_device, mat2->data_device, target->data_device, len);
+    kSubtract<<<NUM_VECTOR_OP_BLOCKS(len),NUM_VECTOR_OP_THREADS_PER_BLOCK(len)>>>(mat1->data_device, mat2->data_device, target->data_device, len);
 
     if (SYNC_THREADS)
         cudaThreadSynchronize();
@@ -1351,7 +1351,7 @@ extern int divide_elementwise(cudamat* mat1, cudamat* mat2, cudamat* target) {
         mat1->size[0] != target->size[0] || mat1->size[1] != target->size[1])
         return ERROR_INCOMPATIBLE_DIMENSIONS;
 
-    kDivide<<<NUM_VECTOR_OP_BLOCKS,NUM_VECTOR_OP_THREADS_PER_BLOCK>>>(mat1->data_device, mat2->data_device, target->data_device, len);
+    kDivide<<<NUM_VECTOR_OP_BLOCKS(len),NUM_VECTOR_OP_THREADS_PER_BLOCK(len)>>>(mat1->data_device, mat2->data_device, target->data_device, len);
 
     if (SYNC_THREADS)
         cudaThreadSynchronize();
@@ -1376,7 +1376,7 @@ extern int mult_elementwise(cudamat* mat1, cudamat* mat2, cudamat* target) {
         mat1->size[0] != target->size[0] || mat1->size[1] != target->size[1])
         return ERROR_INCOMPATIBLE_DIMENSIONS;
 
-    kMult<<<NUM_VECTOR_OP_BLOCKS,NUM_VECTOR_OP_THREADS_PER_BLOCK>>>(mat1->data_device, mat2->data_device, target->data_device, len);
+    kMult<<<NUM_VECTOR_OP_BLOCKS(len),NUM_VECTOR_OP_THREADS_PER_BLOCK(len)>>>(mat1->data_device, mat2->data_device, target->data_device, len);
 
     if (SYNC_THREADS)
         cudaThreadSynchronize();
@@ -1393,7 +1393,7 @@ extern int assign_scalar(cudamat* mat, float alpha) {
     if (!mat->on_device)
         return ERROR_NOT_ON_DEVICE;
 
-    kAssignScalar<<<NUM_VECTOR_OP_BLOCKS,NUM_VECTOR_OP_THREADS_PER_BLOCK>>>(mat->data_device, alpha, len);
+    kAssignScalar<<<NUM_VECTOR_OP_BLOCKS(len),NUM_VECTOR_OP_THREADS_PER_BLOCK(len)>>>(mat->data_device, alpha, len);
 
     if (SYNC_THREADS)
         cudaThreadSynchronize();
@@ -1420,7 +1420,7 @@ extern int mult_by_scalar(cudamat* mat, float alpha, cudamat* target) {
             return CUBLAS_ERROR;
 
     } else {
-        kMultScalar<<<NUM_VECTOR_OP_BLOCKS,NUM_VECTOR_OP_THREADS_PER_BLOCK>>>(mat->data_device, alpha, target->data_device, len);
+        kMultScalar<<<NUM_VECTOR_OP_BLOCKS(len),NUM_VECTOR_OP_THREADS_PER_BLOCK(len)>>>(mat->data_device, alpha, target->data_device, len);
 
         if (SYNC_THREADS) 
             cudaThreadSynchronize();
@@ -1441,7 +1441,7 @@ extern int divide_by_scalar(cudamat* mat, float alpha, cudamat* target) {
     if (mat->size[0] != target->size[0] || mat->size[1] != target->size[1])
         return ERROR_INCOMPATIBLE_DIMENSIONS;
 
-    kDivideScalar<<<NUM_VECTOR_OP_BLOCKS,NUM_VECTOR_OP_THREADS_PER_BLOCK>>>(mat->data_device, alpha, target->data_device, len);
+    kDivideScalar<<<NUM_VECTOR_OP_BLOCKS(len),NUM_VECTOR_OP_THREADS_PER_BLOCK(len)>>>(mat->data_device, alpha, target->data_device, len);
 
     if (SYNC_THREADS)
         cudaThreadSynchronize();
@@ -1461,7 +1461,7 @@ extern int add_scalar(cudamat* mat, float alpha, cudamat* target) {
     if (mat->size[0] != target->size[0] || mat->size[1] != target->size[1])
         return ERROR_INCOMPATIBLE_DIMENSIONS;
 
-    kAddScalar<<<NUM_VECTOR_OP_BLOCKS,NUM_VECTOR_OP_THREADS_PER_BLOCK>>>(mat->data_device, alpha, target->data_device, len);
+    kAddScalar<<<NUM_VECTOR_OP_BLOCKS(len),NUM_VECTOR_OP_THREADS_PER_BLOCK(len)>>>(mat->data_device, alpha, target->data_device, len);
 
     if (SYNC_THREADS)
         cudaThreadSynchronize();

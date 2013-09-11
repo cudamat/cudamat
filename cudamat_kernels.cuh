@@ -17,10 +17,16 @@
  */
 #define NUM_RND_BURNIN                      100
 
+/*
+ * CUDA grid dimensions for different types of kernels
+ */
 #define COPY_BLOCK_SIZE                     16
 #
-#define NUM_VECTOR_OP_BLOCKS                4096
-#define NUM_VECTOR_OP_THREADS_PER_BLOCK     512
+// element-wise kernels use min(ceil(N / 512), 4096) blocks of 512 threads
+#define MAX_VECTOR_OP_BLOCKS                4096
+#define MAX_VECTOR_OP_THREADS_PER_BLOCK     512
+#define NUM_VECTOR_OP_BLOCKS(N)             (min(((N) + MAX_VECTOR_OP_THREADS_PER_BLOCK - 1)/MAX_VECTOR_OP_THREADS_PER_BLOCK, MAX_VECTOR_OP_BLOCKS))
+#define NUM_VECTOR_OP_THREADS_PER_BLOCK(N)  (min((N), MAX_VECTOR_OP_THREADS_PER_BLOCK))
 
 #define PI 3.1415926535897932f
 
