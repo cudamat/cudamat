@@ -46,7 +46,7 @@ Download
 You can obtain the latest release from the repository by typing:
 
 ```bash
-git clone git@github.com:cudamat/cudamat.git
+git clone https://github.com/cudamat/cudamat.git
 ```
 
 You can also download one of the releases from the [releases](https://github.com/cudamat/cudamat/releases) section.
