@@ -1549,4 +1549,31 @@ extern int setSelectedRows(cudamat* target, cudamat* source, cudamat* indices){
         return 0;
 }
 
+extern int where(cudamat* condition_mat, cudamat* if_mat, cudamat* else_mat, cudamat* target) {
+    unsigned int len = condition_mat->size[0] * condition_mat->size[1];
+
+    if (!condition_mat->on_device || !target->on_device)
+        return ERROR_NOT_ON_DEVICE;
+
+    if (condition_mat->size[0] != target->size[0] || condition_mat->size[1] != target->size[1])
+        return ERROR_INCOMPATIBLE_DIMENSIONS;
+
+    if (condition_mat->size[0] != if_mat->size[0] || condition_mat->size[1] != if_mat->size[1])
+        return ERROR_INCOMPATIBLE_DIMENSIONS;
+        
+    if (condition_mat->size[0] != else_mat->size[0] || condition_mat->size[1] != else_mat->size[1])
+        return ERROR_INCOMPATIBLE_DIMENSIONS;
+
+    kWhere<<<NUM_VECTOR_OP_BLOCKS(len),NUM_VECTOR_OP_THREADS_PER_BLOCK(len)>>>(condition_mat->data_device,
+        if_mat->data_device, else_mat->data_device, target->data_device, len);
+
+    if (SYNC_THREADS)
+        cudaThreadSynchronize();
+
+    if (checkCUDAError())
+        return CUDA_ERROR;
+
+    return 0;
+}
+
 }

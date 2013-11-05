@@ -84,6 +84,8 @@ _cudamat.setSelectedRows.restype = ct.c_int
 _cudamat.vdot.restype = ct.c_float
 _cudamat.dot.restype = ct.c_int
 
+_cudamat.where.restype = ct.c_int
+
 def deprecated(func):
     """This is a decorator which can be used to mark functions
     as deprecated. It will result in a warning being emmitted
@@ -1338,6 +1340,19 @@ def pow(mat, p, target = None):
     else:
         raise ValueError, "Value must be of type CUDAMatrix, int, or float."
 
+    if err_code:
+        raise generate_exception(err_code)
+
+    return target
+
+def where(condition_mat, if_mat, else_mat, target = None):
+    """
+    Analog to numpy.where, works only on matrices (not on scalars).
+    """
+    if not target:
+        target = condition_mat
+
+    err_code = _cudamat.where(condition_mat.p_mat, if_mat.p_mat, else_mat.p_mat, target.p_mat)
     if err_code:
         raise generate_exception(err_code)
 
