@@ -1347,7 +1347,8 @@ def pow(mat, p, target = None):
 
 def where(condition_mat, if_mat, else_mat, target = None):
     """
-    Analog to numpy.where, works only on matrices (not on scalars).
+    For each element i, j, store if_math[i, j] in target[i,j] if
+    condition_mat[i, j] is True, and else_mat[i, j] otherwise.
     """
     if not target:
         target = condition_mat
