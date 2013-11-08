@@ -1150,5 +1150,21 @@ def test_select_columns():
 
     assert np.max(np.abs(res - t_d.asarray())) < 10**-4, "Error in CUDAMatrix.select_columns exceeded threshold"
 
+
+def test_where():
+    m = 256
+    n = 128
+    a = np.array(np.random.randn(m, n)*10, dtype=np.float32, order='F')
+    z = np.zeros_like(a)
+    res = np.where(a > 0, a, z);
+    
+    a_d = cm.CUDAMatrix(a)
+    z_d = cm.CUDAMatrix(z)
+    res_d = cm.empty(a_d.shape)
+    a_d.greater_than(0,  res_d)
+    cm.where(res_d, a_d, z_d)
+    assert np.abs(res-res_d.asarray()).max() < 1e-2, "Error in cudamat.where"
+
+
 if __name__ == '__main__':
     nose.run()
