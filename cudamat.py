@@ -1384,7 +1384,9 @@ def cublas_init():
     Initialize Cublas.
     """
 
-    _cudamat.cublas_init()
+    err = _cudamat.cublas_init()
+    if err:
+        raise CUDAMatException('error initializing CUBLAS: (err=%u)' % err)
     CUDAMatrix.ones = CUDAMatrix(np.ones((MAX_ONES, 1), dtype=np.float32, order = 'F'))
 
 init = cublas_init

@@ -1,10 +1,11 @@
-import pdb
 import numpy as np
 import nose
 import cudamat as cm
 
 def setup():
-    cm.cublas_init()
+    err = cm.cublas_init()
+    if err:
+        raise cm.CUDAMatException('error intializing cublas')
 
 def teardown():
     cm.cublas_shutdown()
@@ -102,7 +103,6 @@ def test_get_row_slice():
     m2.copy_to_host()
     m3.copy_to_host()
 
-    #pdb.set_trace()
     assert np.max(np.abs(c - m2.numpy_array)) < 10**-4, "Error in CUDAMatrix.get_row_slice exceeded threshold"
     assert np.max(np.abs(c - m3.numpy_array)) < 10**-4, "Error in CUDAMatrix.get_row_slice exceeded threshold"
 
