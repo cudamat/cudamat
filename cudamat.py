@@ -1379,7 +1379,7 @@ def cuda_set_device(dev_id):
     if err_code:
         raise generate_exception(err_code)
 
-def cublas_init():
+def cublas_init(max_ones=MAX_ONES):
     """
     Initialize Cublas.
     """
@@ -1387,7 +1387,7 @@ def cublas_init():
     err = _cudamat.cublas_init()
     if err:
         raise CUDAMatException('error initializing CUBLAS: (err=%u)' % err)
-    CUDAMatrix.ones = CUDAMatrix(np.ones((MAX_ONES, 1), dtype=np.float32, order = 'F'))
+    CUDAMatrix.ones = CUDAMatrix(np.ones((max_ones, 1), dtype=np.float32, order = 'F'))
 
 init = cublas_init
 
