@@ -588,6 +588,7 @@ class CUDAMatrix(object):
 
         if axis == 0:
             # sum along leading dimension
+            check_ones_matrix(m)
             left = CUDAMatrix.ones.slice(0, m)
             left.set_trans(True)
             right = mat
@@ -595,6 +596,7 @@ class CUDAMatrix(object):
         elif axis == 1:
             # sum along non-leading dimension
             left = mat
+            check_ones_matrix(n)
             right = CUDAMatrix.ones.slice(0, n)
 
         err_code = _cudamat.dot(left.p_mat, right.p_mat, self.p_mat, ct.c_float(beta), ct.c_float(mult))
@@ -1105,6 +1107,10 @@ def empty(shape):
 
     return CUDAMatrix(mat)
 
+def check_ones_matrix(min_size):
+    if min_size > CUDAMatrix.ones.shape[0]:
+        raise CUDAMatException, 'not enough memory allocated for reduction (%u needed, %u actual), use cudamat.init() to allocate more' % (min_size,CUDAMatrix.ones.shape[0])
+
 def sum(mat, axis, target = None, mult = 1.):
     """
     Sum the matrix along the given dimension, where 0 represents the leading
@@ -1116,8 +1122,11 @@ def sum(mat, axis, target = None, mult = 1.):
     m = _cudamat.get_leading_dimension(mat.p_mat)
     n = _cudamat.get_nonleading_dimension(mat.p_mat)
 
+
     if axis == 0:
         # sum along leading dimension
+        check_ones_matrix(m)
+
         left = CUDAMatrix.ones.slice(0, m)
         left.set_trans(True)
         right = mat
@@ -1128,6 +1137,7 @@ def sum(mat, axis, target = None, mult = 1.):
     elif axis == 1:
         # sum along non-leading dimension
         left = mat
+        check_ones_matrix(n)
         right = CUDAMatrix.ones.slice(0, n)
 
         if not target:
