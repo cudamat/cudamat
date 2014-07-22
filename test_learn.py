@@ -25,4 +25,4 @@ def test_mult_by_sigmoid_deriv():
     assert np.max(np.abs(c_acts - g_acts.asarray())) < 10**-2, "Error in cudamat.learn.mult_by_sigmoid_deriv exceeded threshold"
 
 if __name__ == '__main__':
-    nose.run()
+    nose.runmodule()
