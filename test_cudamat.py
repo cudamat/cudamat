@@ -1167,4 +1167,4 @@ def test_where():
 
 
 if __name__ == '__main__':
-    nose.run()
+    nose.runmodule()
