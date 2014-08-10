@@ -128,7 +128,7 @@ def generate_exception(err_code):
         return CUDAMatException("Matrix is not in device memory.")
     elif err_code == -9:
         return CUDAMatException("Operation not supported.")
-        
+
 
 class cudamat(ct.Structure):
     _fields_ = [('data_host', ct.POINTER(ct.c_float)),
@@ -140,7 +140,7 @@ class cudamat(ct.Structure):
                 ('owns_data', ct.c_int)]
 
 class rnd_struct(ct.Structure):
-    _fields_ = [('dev_rnd_mults', ct.POINTER(ct.c_uint)), 
+    _fields_ = [('dev_rnd_mults', ct.POINTER(ct.c_uint)),
                 ('dev_rnd_words', ct.POINTER(ct.c_longlong))]
 
 class TransposedCUDAMatrix(object):
@@ -290,14 +290,14 @@ class CUDAMatrix(object):
         Create a copy of the matrix on GPU. If include_host is True, also
         creates a copy of the matrix on CPU if there was any.
         """
-        
+
         new_mat = empty(self.shape).assign(self)
-        
+
         if include_host and self.mat.on_host:
             new_mat.numpy_array = self.numpy_array.copy()
             new_mat.mat.data_host = new_mat.numpy_array.ctypes.data_as(ct.POINTER(ct.c_float))
             new_mat.mat.on_host = 1
-        
+
         return new_mat
 
     def assign(self, val):
@@ -310,7 +310,7 @@ class CUDAMatrix(object):
             err_code = _cudamat.assign_scalar(self.p_mat, ct.c_float(val))
         else:
             raise ValueError, "Assigned value must be of type CUDAMatrix, int, or float."
-            
+
         if err_code:
             raise generate_exception(err_code)
 
@@ -355,7 +355,7 @@ class CUDAMatrix(object):
         except:
             new_mat.sliceof = self
 
-        # reproduce the slice on the host as well (if requested)        
+        # reproduce the slice on the host as well (if requested)
         if include_host and self.mat.on_host:
             new_mat.numpy_array = self.numpy_array[:, first_col:last_col]
             new_mat.mat.data_host = new_mat.numpy_array.ctypes.data_as(ct.POINTER(ct.c_float))
@@ -433,7 +433,7 @@ class CUDAMatrix(object):
         distribution over the (0,1) interval.
         """
 
-        err_code = _cudamat.fill_with_rand(CUDAMatrix.rnd_state_p, self.p_mat) 
+        err_code = _cudamat.fill_with_rand(CUDAMatrix.rnd_state_p, self.p_mat)
         if err_code:
             raise generate_exception(err_code)
 
@@ -445,7 +445,7 @@ class CUDAMatrix(object):
         distribution.
         """
 
-        err_code = _cudamat.fill_with_randn(CUDAMatrix.rnd_state_p, self.p_mat) 
+        err_code = _cudamat.fill_with_randn(CUDAMatrix.rnd_state_p, self.p_mat)
         if err_code:
             raise generate_exception(err_code)
 
@@ -465,7 +465,7 @@ class CUDAMatrix(object):
             raise generate_exception(err_code)
 
         return target
-        
+
     def add_col_mult(self, vec, mult, target = None):
         """
         Add a multiple of vector vec to every column of the matrix. If a target
@@ -480,7 +480,7 @@ class CUDAMatrix(object):
             raise generate_exception(err_code)
 
         return target
-        
+
     def add_row_vec(self, vec, target = None):
         """
         Add vector vec to every row of the matrix. If a target is provided,
@@ -495,7 +495,7 @@ class CUDAMatrix(object):
             raise generate_exception(err_code)
 
         return target
-        
+
     def mult_by_col(self, vec, target = None):
         """
         Multiply vector vec into every column of the matrix. If a target is
@@ -510,7 +510,7 @@ class CUDAMatrix(object):
             raise generate_exception(err_code)
 
         return target
-        
+
     def mult_by_row(self, vec, target = None):
         """
         Multiply vector vec into every row of the matrix. If a target is
@@ -525,7 +525,7 @@ class CUDAMatrix(object):
             raise generate_exception(err_code)
 
         return target
-        
+
     def div_by_col(self, vec, target = None):
         """
         Divide every column of the matrix by vector vec. If a target is
@@ -540,7 +540,7 @@ class CUDAMatrix(object):
             raise generate_exception(err_code)
 
         return target
-        
+
     def div_by_row(self, vec, target = None):
         """
         Divide every row of the matrix by vector vec. If a target is
@@ -555,7 +555,7 @@ class CUDAMatrix(object):
             raise generate_exception(err_code)
 
         return target
-        
+
     def sum(self, axis, target = None, mult = 1.):
         """
         Sum the matrix along the given dimension, where 0 represents the leading
@@ -591,7 +591,7 @@ class CUDAMatrix(object):
             left = CUDAMatrix.ones.slice(0, m)
             left.set_trans(True)
             right = mat
- 
+
         elif axis == 1:
             # sum along non-leading dimension
             left = mat
@@ -708,7 +708,7 @@ class CUDAMatrix(object):
         if axis == 0:
             if not target:
                 target = empty((1, n))
- 
+
         elif axis == 1:
             if not target:
                 target = empty((m, 1))
@@ -731,7 +731,7 @@ class CUDAMatrix(object):
         if axis == 0:
             if not target:
                 target = empty((1, n))
- 
+
         elif axis == 1:
             if not target:
                 target = empty((m, 1))
@@ -755,7 +755,7 @@ class CUDAMatrix(object):
         if axis == 0:
             if not target:
                 target = empty((1, n))
- 
+
         elif axis == 1:
             if not target:
                 target = empty((m, 1))
@@ -779,7 +779,7 @@ class CUDAMatrix(object):
         if axis == 0:
             if not target:
                 target = empty((1, n))
- 
+
         elif axis == 1:
             if not target:
                 target = empty((m, 1))
@@ -865,7 +865,7 @@ class CUDAMatrix(object):
         Subtract the dot product of m1 and m2 from the matrix, scaled by mult.
         Self is scaled by beta before subtracting anything.
         """
-        
+
         return self.add_dot(m1, m2, mult = -1. * mult, beta = beta)
 
     def add_mult(self, mat2, alpha = 1.):
@@ -878,7 +878,7 @@ class CUDAMatrix(object):
             raise generate_exception(err_code)
 
         return self
-    
+
     def subtract_mult(self, mat2, alpha = 1.):
         """
         Subtract a multiple of mat2 from the matrix.
@@ -1025,9 +1025,9 @@ class CUDAMatrix(object):
         return target
 
     def euclid_norm(self):
-    	"""
-    	Returns the L2 norm of the matrix flattened to a vector.
-    	"""
+        """
+        Returns the L2 norm of the matrix flattened to a vector.
+        """
         err_code = ct.c_int(0)
         res = _cudamat.euclid_norm(self.p_mat, ct.byref(err_code))
 
@@ -1037,9 +1037,9 @@ class CUDAMatrix(object):
         return res
 
     def manhattan_norm(self):
-    	"""
-    	Returns the L1 norm of the matrix flattened to a vector.
-    	"""
+        """
+        Returns the L1 norm of the matrix flattened to a vector.
+        """
         err_code = ct.c_int(0)
         res = _cudamat.manhattan_norm(self.p_mat, ct.byref(err_code))
 
@@ -1132,7 +1132,7 @@ def sum(mat, axis, target = None, mult = 1.):
 
         if not target:
             target = empty((1, n))
- 
+
     elif axis == 1:
         # sum along non-leading dimension
         left = mat
