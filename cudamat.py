@@ -2,7 +2,6 @@ import os, pdb, platform, time, warnings
 import ctypes as ct
 import numpy as np
 
-MAX_ONES = 1024*256
 
 if platform.system() == 'Windows':
     _cudamat = ct.cdll.LoadLibrary('libcudamat.dll')
@@ -1389,9 +1388,13 @@ def cuda_set_device(dev_id):
     if err_code:
         raise generate_exception(err_code)
 
-def cublas_init(max_ones=MAX_ONES):
+def cublas_init(max_ones=(1024*256)):
     """
     Initialize Cublas.
+
+    'max_ones' is an optional argument that determines the length of
+    the largest sum that can be computed using Cublas matrix multiply.
+    (default
     """
 
     err = _cudamat.cublas_init()
