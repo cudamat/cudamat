@@ -318,7 +318,7 @@ class CUDAMatrix(object):
         elif isinstance(val, (int, float)):
             err_code = _cudamat.assign_scalar(self.p_mat, ct.c_float(val))
         else:
-            raise ValueError, "Assigned value must be of type CUDAMatrix, int, or float."
+            raise ValueError("Assigned value must be of type CUDAMatrix, int, or float.")
 
         if err_code:
             raise generate_exception(err_code)
@@ -911,7 +911,7 @@ class CUDAMatrix(object):
         elif isinstance(val, (int, float)):
             err_code = _cudamat.add_scalar(self.p_mat, ct.c_float(val), target.p_mat)
         else:
-            raise ValueError, "Value must be of type CUDAMatrix, int, or float."
+            raise ValueError("Value must be of type CUDAMatrix, int, or float.")
 
         if err_code:
             raise generate_exception(err_code)
@@ -930,7 +930,7 @@ class CUDAMatrix(object):
         elif isinstance(val, (int, float)):
             err_code = _cudamat.add_scalar(self.p_mat, ct.c_float(-1*val), target.p_mat)
         else:
-            raise ValueError, "Value must be of type CUDAMatrix, int, or float."
+            raise ValueError("Value must be of type CUDAMatrix, int, or float.")
 
         if err_code:
             raise generate_exception(err_code)
@@ -949,7 +949,7 @@ class CUDAMatrix(object):
         elif isinstance(val, (int, float)):
             err_code = _cudamat.divide_by_scalar(self.p_mat, ct.c_float(val), target.p_mat)
         else:
-            raise ValueError, "Value must be of type CUDAMatrix, int, or float."
+            raise ValueError("Value must be of type CUDAMatrix, int, or float.")
 
         if err_code:
             raise generate_exception(err_code)
@@ -968,7 +968,7 @@ class CUDAMatrix(object):
         elif isinstance(val, (int, float)):
             err_code = _cudamat.mult_by_scalar(self.p_mat, ct.c_float(val), target.p_mat)
         else:
-            raise ValueError, "Value must be of type CUDAMatrix, int, or float."
+            raise ValueError("Value must be of type CUDAMatrix, int, or float.")
 
         if err_code:
             raise generate_exception(err_code)
@@ -1118,7 +1118,7 @@ def empty(shape):
 
 def check_ones_matrix(min_size):
     if min_size > CUDAMatrix.ones.shape[0]:
-        raise CUDAMatException, 'not enough memory allocated for reduction (%u needed, %u actual), use cudamat.init() to allocate more' % (min_size, CUDAMatrix.ones.shape[0])
+        raise CUDAMatException('not enough memory allocated for reduction (%u needed, %u actual), use cudamat.init() to allocate more' % (min_size, CUDAMatrix.ones.shape[0]))
 
 
 def sum(mat, axis, target=None, mult=1.):
@@ -1370,7 +1370,7 @@ def pow(mat, p, target=None):
     elif isinstance(p, (int, float)):
         err_code = _cudamat.apply_pow(mat.p_mat, ct.c_float(p), target.p_mat)
     else:
-        raise ValueError, "Value must be of type CUDAMatrix, int, or float."
+        raise ValueError("Value must be of type CUDAMatrix, int, or float.")
 
     if err_code:
         raise generate_exception(err_code)
