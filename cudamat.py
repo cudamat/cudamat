@@ -220,7 +220,6 @@ class CUDAMatrix(object):
         Initialize and seed the random number generator.
         """
 
-        NUM_RND_STREAMS = 96*128
         CUDAMatrix.rndInitialized = 1
         CUDAMatrix.rnd_state = rnd_struct()
         CUDAMatrix.rnd_state_p = ct.pointer(CUDAMatrix.rnd_state)
