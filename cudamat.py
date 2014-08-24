@@ -1125,7 +1125,6 @@ def sum(mat, axis, target = None, mult = 1.):
     if axis == 0:
         # sum along leading dimension
         check_ones_matrix(m)
-
         left = CUDAMatrix.ones.slice(0, m)
         left.set_trans(True)
         right = mat
@@ -1394,7 +1393,7 @@ def cublas_init(max_ones=(1024*256)):
 
     'max_ones' is an optional argument that determines the length of
     the largest sum that can be computed using Cublas matrix multiply.
-    (default
+    A larger value causes more memory to be allocated for this purpose.
     """
 
     err = _cudamat.cublas_init()
