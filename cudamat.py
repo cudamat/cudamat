@@ -88,6 +88,7 @@ _cudamat.dot.restype = ct.c_int
 
 _cudamat.where.restype = ct.c_int
 
+
 def deprecated(func):
     """This is a decorator which can be used to mark functions
     as deprecated. It will result in a warning being emmitted
@@ -102,11 +103,14 @@ def deprecated(func):
     newFunc.__dict__.update(func.__dict__)
     return newFunc
 
+
 class CUDAMatException(Exception):
     pass
 
+
 def get_last_cuda_error():
     return str(_cudamat.get_last_cuda_error())
+
 
 def generate_exception(err_code):
     """
@@ -142,9 +146,11 @@ class cudamat(ct.Structure):
                 ('is_trans', ct.c_int),
                 ('owns_data', ct.c_int)]
 
+
 class rnd_struct(ct.Structure):
     _fields_ = [('dev_rnd_mults', ct.POINTER(ct.c_uint)),
                 ('dev_rnd_words', ct.POINTER(ct.c_longlong))]
+
 
 class TransposedCUDAMatrix(object):
     def __init__(self, mat):
@@ -153,13 +159,14 @@ class TransposedCUDAMatrix(object):
         self.mat.is_trans = 1
         self.p_mat = ct.pointer(self.mat)
 
+
 class CUDAMatrix(object):
     """
     A CUDAMatrix object represents a matrix of single precision floating point
     numbers on a GPU.
     """
 
-    def __init__(self, array, copy_to_device = True, copy_on_host = True):
+    def __init__(self, array, copy_to_device=True, copy_on_host=True):
         """
         Initializes a new matrix object in one of two ways. If array is a numpy
         ndarray, memory for a matrix with the same dimensions is allocated on
@@ -173,7 +180,7 @@ class CUDAMatrix(object):
 
         if type(array) in [np.ndarray, np.memmap]:
             # Convert array to float32 in FORTRAN order
-            array = reformat(array, copy = copy_on_host)
+            array = reformat(array, copy=copy_on_host)
 
             # Initialize as a ndarray-tied matrix.
             self.mat = cudamat()
@@ -208,7 +215,7 @@ class CUDAMatrix(object):
             pass
 
     @staticmethod
-    def init_random(seed = 0):
+    def init_random(seed=0):
         """
         Initialize and seed the random number generator.
         """
@@ -279,7 +286,7 @@ class CUDAMatrix(object):
             m = self.mat.size[0]
             n = self.mat.size[1]
 
-            self.numpy_array = np.empty((m, n), dtype=np.float32, order = 'F')
+            self.numpy_array = np.empty((m, n), dtype=np.float32, order='F')
             self.mat.data_host = self.numpy_array.ctypes.data_as(ct.POINTER(ct.c_float))
 
             self.mat.on_host = 1
@@ -288,7 +295,7 @@ class CUDAMatrix(object):
         if err_code:
             raise generate_exception(err_code)
 
-    def copy(self, include_host = False):
+    def copy(self, include_host=False):
         """
         Create a copy of the matrix on GPU. If include_host is True, also
         creates a copy of the matrix on CPU if there was any.
@@ -335,7 +342,7 @@ class CUDAMatrix(object):
 
         _cudamat.set_transpose(self.p_mat, ct.c_int(1 * is_trans))
 
-    def slice(self, first_col, last_col, include_host = False):
+    def slice(self, first_col, last_col, include_host=False):
         """
         Creates a view into a consecutive range of columns of an existing
         matrix on GPU. If include_host is set to True, also creates a view
@@ -366,7 +373,7 @@ class CUDAMatrix(object):
 
         return new_mat
 
-    def get_col_slice(self, first_col, last_col, target = None):
+    def get_col_slice(self, first_col, last_col, target=None):
         """
         Get the columns with indices first_col through last_col. If a target
         is provided, columns are copied into the target. Otherwise, returns a
@@ -389,7 +396,7 @@ class CUDAMatrix(object):
 
         return self
 
-    def get_row_slice(self, start, end, target = None):
+    def get_row_slice(self, start, end, target=None):
         """
         Get the rows with indices start through end. If target is not provided
         memory for a new matrix will be allocated.
@@ -417,7 +424,7 @@ class CUDAMatrix(object):
 
         return self
 
-    def transpose(self, target = None):
+    def transpose(self, target=None):
         """
         Return a transposed copy of the matrix.
         """
@@ -454,7 +461,7 @@ class CUDAMatrix(object):
 
         return self
 
-    def add_col_vec(self, vec, target = None):
+    def add_col_vec(self, vec, target=None):
         """
         Add vector vec to every column of the matrix. If a target is provided,
         it is used to store the result instead of self.
@@ -469,7 +476,7 @@ class CUDAMatrix(object):
 
         return target
 
-    def add_col_mult(self, vec, mult, target = None):
+    def add_col_mult(self, vec, mult, target=None):
         """
         Add a multiple of vector vec to every column of the matrix. If a target
         is provided, it is used to store the result instead of self.
@@ -484,7 +491,7 @@ class CUDAMatrix(object):
 
         return target
 
-    def add_row_vec(self, vec, target = None):
+    def add_row_vec(self, vec, target=None):
         """
         Add vector vec to every row of the matrix. If a target is provided,
         it is used to store the result instead of self.
@@ -499,7 +506,7 @@ class CUDAMatrix(object):
 
         return target
 
-    def mult_by_col(self, vec, target = None):
+    def mult_by_col(self, vec, target=None):
         """
         Multiply vector vec into every column of the matrix. If a target is
         provided, it is used to store the result instead of self.
@@ -514,7 +521,7 @@ class CUDAMatrix(object):
 
         return target
 
-    def mult_by_row(self, vec, target = None):
+    def mult_by_row(self, vec, target=None):
         """
         Multiply vector vec into every row of the matrix. If a target is
         provided, it is used to store the result instead of self.
@@ -529,7 +536,7 @@ class CUDAMatrix(object):
 
         return target
 
-    def div_by_col(self, vec, target = None):
+    def div_by_col(self, vec, target=None):
         """
         Divide every column of the matrix by vector vec. If a target is
         provided, it is used to store the result instead of self.
@@ -544,7 +551,7 @@ class CUDAMatrix(object):
 
         return target
 
-    def div_by_row(self, vec, target = None):
+    def div_by_row(self, vec, target=None):
         """
         Divide every row of the matrix by vector vec. If a target is
         provided, it is used to store the result instead of self.
@@ -559,7 +566,7 @@ class CUDAMatrix(object):
 
         return target
 
-    def sum(self, axis, target = None, mult = 1.):
+    def sum(self, axis, target=None, mult=1.):
         """
         Sum the matrix along the given dimension, where 0 represents the leading
         dimension and 1 represents the non-leading dimension. If a target is
@@ -569,7 +576,7 @@ class CUDAMatrix(object):
 
         return sum(self, axis, target, mult)
 
-    def mean(self, axis, target = None):
+    def mean(self, axis, target=None):
         """
         Compute the mean of the matrix along the given dimension, where 0
         represents the leading dimension and 1 represents the non-leading
@@ -579,7 +586,7 @@ class CUDAMatrix(object):
 
         return mean(self, axis, target)
 
-    def add_sums(self, mat, axis, mult = 1., beta = 1.):
+    def add_sums(self, mat, axis, mult=1., beta=1.):
         """
         Add a multiple of the sums of the matrix mat along the given dimension
         to self. Self is scaled by beta before adding anything.
@@ -607,7 +614,7 @@ class CUDAMatrix(object):
 
         return self
 
-    def less_than(self, val, target = None):
+    def less_than(self, val, target=None):
         """
         Perform the operation target = 1. * (self < val), where val can be a matrix or a scalar.
         """
@@ -625,7 +632,7 @@ class CUDAMatrix(object):
 
         return target
 
-    def greater_than(self, val, target = None):
+    def greater_than(self, val, target=None):
         """
         Perform the operation target = 1. * (self > val), where val can be a matrix or a scalar.
         """
@@ -643,7 +650,7 @@ class CUDAMatrix(object):
 
         return target
 
-    def equals(self, val, target = None):
+    def equals(self, val, target=None):
         """
         Perform the operation target = 1. * (self == val), where val can be a matrix or a scalar.
         """
@@ -661,7 +668,7 @@ class CUDAMatrix(object):
 
         return target
 
-    def minimum(self, val, target = None):
+    def minimum(self, val, target=None):
         """
         Perform the element-wise operation target = min(self, val), where
         val can be a matrix or a scalar.
@@ -680,7 +687,7 @@ class CUDAMatrix(object):
 
         return target
 
-    def maximum(self, val, target = None):
+    def maximum(self, val, target=None):
         """
         Perform the element-wise operation target = max(self, val), where
         val can be a matrix or a scalar.
@@ -699,7 +706,7 @@ class CUDAMatrix(object):
 
         return target
 
-    def min(self, axis, target = None):
+    def min(self, axis, target=None):
         """
         Find the minimum value along the given dimension, where 0 represents the
         leading dimension and 1 represents the non-leading dimension. If a target
@@ -716,13 +723,13 @@ class CUDAMatrix(object):
             if not target:
                 target = empty((m, 1))
 
-        err_code =  _cudamat.min_by_axis(self.p_mat, target.p_mat, ct.c_int(axis))
+        err_code = _cudamat.min_by_axis(self.p_mat, target.p_mat, ct.c_int(axis))
         if err_code:
             raise generate_exception(err_code)
 
         return target
 
-    def max(self, axis, target = None):
+    def max(self, axis, target=None):
         """
         Find the maximum value along the given dimension, where 0 represents the
         leading dimension and 1 represents the non-leading dimension. If a target
@@ -739,13 +746,13 @@ class CUDAMatrix(object):
             if not target:
                 target = empty((m, 1))
 
-        err_code =  _cudamat.max_by_axis(self.p_mat, target.p_mat, ct.c_int(axis))
+        err_code = _cudamat.max_by_axis(self.p_mat, target.p_mat, ct.c_int(axis))
         if err_code:
             raise generate_exception(err_code)
 
         return target
 
-    def argmin(self, axis, target = None):
+    def argmin(self, axis, target=None):
         """
         Find the index of the minimum value along the given dimension, where 0
         represents the leading dimension and 1 represents the non-leading
@@ -763,13 +770,13 @@ class CUDAMatrix(object):
             if not target:
                 target = empty((m, 1))
 
-        err_code =  _cudamat.argmin_by_axis(self.p_mat, target.p_mat, ct.c_int(axis))
+        err_code = _cudamat.argmin_by_axis(self.p_mat, target.p_mat, ct.c_int(axis))
         if err_code:
             raise generate_exception(err_code)
 
         return target
 
-    def argmax(self, axis, target = None):
+    def argmax(self, axis, target=None):
         """
         Find the index of the maximum value along the given dimension, where 0
         represents the leading dimension and 1 represents the non-leading
@@ -787,13 +794,13 @@ class CUDAMatrix(object):
             if not target:
                 target = empty((m, 1))
 
-        err_code =  _cudamat.argmax_by_axis(self.p_mat, target.p_mat, ct.c_int(axis))
+        err_code = _cudamat.argmax_by_axis(self.p_mat, target.p_mat, ct.c_int(axis))
         if err_code:
             raise generate_exception(err_code)
 
         return target
 
-    def sign(self, target = None):
+    def sign(self, target=None):
         """
         Find the sign of each element of the matrix.
         """
@@ -807,21 +814,21 @@ class CUDAMatrix(object):
 
         return target
 
-    def apply_sigmoid(self, target = None):
+    def apply_sigmoid(self, target=None):
         """
         Apply the logistic sigmoid to each element of the matrix.
         """
 
         return sigmoid(self, target)
 
-    def apply_tanh(self, target = None):
+    def apply_tanh(self, target=None):
         """
         Apply the tanh to each element of the matrix.
         """
 
         return tanh(self, target)
 
-    def apply_soft_threshold(self, alpha, target = None):
+    def apply_soft_threshold(self, alpha, target=None):
         """
         Apply the soft threshold function to each element of the matrix:
 
@@ -830,7 +837,7 @@ class CUDAMatrix(object):
 
         return soft_threshold(self, alpha, target)
 
-    def reciprocal(self, target = None):
+    def reciprocal(self, target=None):
         """
         Find the reciprocal of each element of the matrix.
         """
@@ -844,14 +851,14 @@ class CUDAMatrix(object):
 
         return target
 
-    def dot(self, mat2, target = None):
+    def dot(self, mat2, target=None):
         """
         Multiply the matrix by mat2 from the right.
         """
 
         return dot(self, mat2, target)
 
-    def add_dot(self, m1, m2, mult = 1., beta = 1.):
+    def add_dot(self, m1, m2, mult=1., beta=1.):
         """
         Add the dot product of m1 and m2 to the matrix, scaled by mult.
         Self is scaled by beta before adding anything.
@@ -863,15 +870,15 @@ class CUDAMatrix(object):
 
         return self
 
-    def subtract_dot(self, m1, m2, mult = 1., beta = 1.):
+    def subtract_dot(self, m1, m2, mult=1., beta=1.):
         """
         Subtract the dot product of m1 and m2 from the matrix, scaled by mult.
         Self is scaled by beta before subtracting anything.
         """
 
-        return self.add_dot(m1, m2, mult = -1. * mult, beta = beta)
+        return self.add_dot(m1, m2, mult=-1. * mult, beta=beta)
 
-    def add_mult(self, mat2, alpha = 1.):
+    def add_mult(self, mat2, alpha=1.):
         """
         Add multiple of mat2 to the matrix.
         """
@@ -882,7 +889,7 @@ class CUDAMatrix(object):
 
         return self
 
-    def subtract_mult(self, mat2, alpha = 1.):
+    def subtract_mult(self, mat2, alpha=1.):
         """
         Subtract a multiple of mat2 from the matrix.
         """
@@ -893,7 +900,7 @@ class CUDAMatrix(object):
 
         return self
 
-    def add(self, val, target = None):
+    def add(self, val, target=None):
         """Add val to self, where val can be a scalar or a CUDAMatrix with the
         same dimensions as self. """
 
@@ -912,7 +919,7 @@ class CUDAMatrix(object):
 
         return target
 
-    def subtract(self, val, target = None):
+    def subtract(self, val, target=None):
         """Subtract val from self, where val can be a scalar or a CUDAMatrix with
         the same dimensions as self. """
 
@@ -931,7 +938,7 @@ class CUDAMatrix(object):
 
         return target
 
-    def divide(self, val, target = None):
+    def divide(self, val, target=None):
         """Divide self by val, where val can be a scalar or a CUDAMatrix with the
         same dimensions as self. """
 
@@ -950,7 +957,7 @@ class CUDAMatrix(object):
 
         return target
 
-    def mult(self, val, target = None):
+    def mult(self, val, target=None):
         """Multiply self by val, where val can be a scalar or a CUDAMatrix with
         the same dimensions as self. """
 
@@ -982,7 +989,7 @@ class CUDAMatrix(object):
         return self
 
     @deprecated
-    def mult_by_scalar(self, alpha, target = None):
+    def mult_by_scalar(self, alpha, target=None):
         """
         Multiply the matrix by a scalar.
         """
@@ -996,9 +1003,8 @@ class CUDAMatrix(object):
 
         return target
 
-
     @deprecated
-    def div_by_scalar(self, alpha, target = None):
+    def div_by_scalar(self, alpha, target=None):
         """
         Divide the matrix by a scalar.
         """
@@ -1013,7 +1019,7 @@ class CUDAMatrix(object):
         return target
 
     @deprecated
-    def add_scalar(self, alpha, target = None):
+    def add_scalar(self, alpha, target=None):
         """
         Increment the matrix by a scalar.
         """
@@ -1096,6 +1102,7 @@ class CUDAMatrix(object):
 
         return self
 
+
 def empty(shape):
     """
     Creates and returns a new CUDAMatrix with the given shape.
@@ -1109,11 +1116,13 @@ def empty(shape):
 
     return CUDAMatrix(mat)
 
+
 def check_ones_matrix(min_size):
     if min_size > CUDAMatrix.ones.shape[0]:
-        raise CUDAMatException, 'not enough memory allocated for reduction (%u needed, %u actual), use cudamat.init() to allocate more' % (min_size,CUDAMatrix.ones.shape[0])
+        raise CUDAMatException, 'not enough memory allocated for reduction (%u needed, %u actual), use cudamat.init() to allocate more' % (min_size, CUDAMatrix.ones.shape[0])
 
-def sum(mat, axis, target = None, mult = 1.):
+
+def sum(mat, axis, target=None, mult=1.):
     """
     Sum the matrix along the given dimension, where 0 represents the leading
     dimension and 1 represents the non-leading dimension. If a target is
@@ -1123,7 +1132,6 @@ def sum(mat, axis, target = None, mult = 1.):
 
     m = _cudamat.get_leading_dimension(mat.p_mat)
     n = _cudamat.get_nonleading_dimension(mat.p_mat)
-
 
     if axis == 0:
         # sum along leading dimension
@@ -1150,16 +1158,18 @@ def sum(mat, axis, target = None, mult = 1.):
 
     return target
 
-def mean(mat, axis, target = None):
+
+def mean(mat, axis, target=None):
     """
     Compute the mean of the matrix along the given dimension, where 0 represents
     the leading dimension and 1 represents the non-leading dimension. If a
     target is not provided, a new vector is created for storing the result.
     """
 
-    return sum(mat, axis, target = target, mult = 1. / mat.shape[axis])
+    return sum(mat, axis, target=target, mult=1. / mat.shape[axis])
 
-def dot(m1, m2, target = None, beta = 0., alpha = 1.):
+
+def dot(m1, m2, target=None, beta=0., alpha=1.):
     """
     Find the dot product between m1 and m2 and store in target:
     target = beta*target + alpha*(m1 m2)
@@ -1179,6 +1189,7 @@ def dot(m1, m2, target = None, beta = 0., alpha = 1.):
 
     return target
 
+
 def vdot(m1, m2):
     """
     Compute the vector dot product of matrices m1 and m2.
@@ -1192,7 +1203,8 @@ def vdot(m1, m2):
 
     return res
 
-def sigmoid(mat, target = None):
+
+def sigmoid(mat, target=None):
     """
     Apply the logistic sigmoid to each element of the matrix mat.
     """
@@ -1206,7 +1218,8 @@ def sigmoid(mat, target = None):
 
     return target
 
-def tanh(mat, target = None):
+
+def tanh(mat, target=None):
     """
     Apply the tanh to each element of the matrix mat.
     """
@@ -1220,7 +1233,8 @@ def tanh(mat, target = None):
 
     return target
 
-def soft_threshold(mat, alpha, target = None):
+
+def soft_threshold(mat, alpha, target=None):
     """
     Apply the soft threshold function to each element of the matrix:
 
@@ -1236,7 +1250,8 @@ def soft_threshold(mat, alpha, target = None):
 
     return target
 
-def abs(mat, target = None):
+
+def abs(mat, target=None):
     """
     Apply abs to each element of the matrix mat.
     """
@@ -1250,7 +1265,8 @@ def abs(mat, target = None):
 
     return target
 
-def log_1_plus_exp(mat, target = None):
+
+def log_1_plus_exp(mat, target=None):
     """
     Apply log(1+exp(x)) to each element of the matrix mat.
     """
@@ -1264,7 +1280,8 @@ def log_1_plus_exp(mat, target = None):
 
     return target
 
-def log(mat, target = None):
+
+def log(mat, target=None):
     """
     Find the natural logarithm of each element of the matrix mat.
     """
@@ -1278,7 +1295,8 @@ def log(mat, target = None):
 
     return target
 
-def exp(mat, target = None):
+
+def exp(mat, target=None):
     """
     Apply the exponential function to each element of the matrix mat.
     """
@@ -1292,7 +1310,8 @@ def exp(mat, target = None):
 
     return target
 
-def gamma(mat, target = None):
+
+def gamma(mat, target=None):
     """
     Apply the gamma function to each element of the matrix mat.
     """
@@ -1306,7 +1325,8 @@ def gamma(mat, target = None):
 
     return target
 
-def lgamma(mat, target = None):
+
+def lgamma(mat, target=None):
     """
     Apply the log gamma function to each element of the matrix mat.
     """
@@ -1320,7 +1340,8 @@ def lgamma(mat, target = None):
 
     return target
 
-def sqrt(mat, target = None):
+
+def sqrt(mat, target=None):
     """
     Compute the square root of each element of the matrix mat.
     """
@@ -1334,7 +1355,8 @@ def sqrt(mat, target = None):
 
     return target
 
-def pow(mat, p, target = None):
+
+def pow(mat, p, target=None):
     """
     If p is a scalar, compute the 'p'th power of each element of the matrix mat,
     otherwise raise each element of the matrix mat to the power given by the
@@ -1356,7 +1378,8 @@ def pow(mat, p, target = None):
 
     return target
 
-def where(condition_mat, if_mat, else_mat, target = None):
+
+def where(condition_mat, if_mat, else_mat, target=None):
     """
     For each element i, j, store if_math[i, j] in target[i,j] if
     condition_mat[i, j] is True, and else_mat[i, j] otherwise.
@@ -1370,10 +1393,12 @@ def where(condition_mat, if_mat, else_mat, target = None):
 
     return target
 
+
 def cuda_sync_threads():
     _cudamat.cuda_sync_threads()
 
-def reformat(array, copy = True):
+
+def reformat(array, copy=True):
     """
     Returns array as a float32 array in FORTRAN order.
     If copy is set to False, the array will only be copied if it is not already
@@ -1381,14 +1406,16 @@ def reformat(array, copy = True):
     """
     return np.array(array, dtype=np.float32, order='F', copy=copy)
 
+
 def cuda_set_device(dev_id):
     """
     Selects the CUDA device with the given ID.
     """
 
-    err_code =  _cudamat.cuda_set_device(ct.c_int(dev_id))
+    err_code = _cudamat.cuda_set_device(ct.c_int(dev_id))
     if err_code:
         raise generate_exception(err_code)
+
 
 def cublas_init(max_ones=(1024*256)):
     """
@@ -1402,9 +1429,10 @@ def cublas_init(max_ones=(1024*256)):
     err = _cudamat.cublas_init()
     if err:
         raise CUDAMatException('error initializing CUBLAS: (err=%u)' % err)
-    CUDAMatrix.ones = CUDAMatrix(np.ones((max_ones, 1), dtype=np.float32, order = 'F'))
+    CUDAMatrix.ones = CUDAMatrix(np.ones((max_ones, 1), dtype=np.float32, order='F'))
 
 init = cublas_init
+
 
 def cublas_shutdown():
     """
