@@ -3,9 +3,7 @@ import nose
 import cudamat as cm
 
 def setup():
-    err = cm.cublas_init()
-    if err:
-        raise cm.CUDAMatException('error intializing cublas')
+    cm.cublas_init()
 
 def teardown():
     cm.cublas_shutdown()
@@ -64,7 +62,7 @@ def test_assign():
     n = 128
     a = np.array(np.random.rand(m, n)*10, dtype=np.float32, order='F')
     b = np.array(np.random.rand(m, n)*10, dtype=np.float32, order='F')
-    
+
     m1 = cm.CUDAMatrix(a)
     m2 = cm.CUDAMatrix(b)
 
@@ -77,7 +75,7 @@ def test_assign_scalar():
     m = 256
     n = 128
     a = np.array(np.random.rand(m, n)*10, dtype=np.float32, order='F')
-    
+
     m1 = cm.CUDAMatrix(a)
 
     m1.assign(np.pi)
@@ -93,9 +91,9 @@ def test_get_row_slice():
 
     a = np.array(np.random.rand(m, n)*10, dtype=np.float32, order='F')
     b = np.array(np.random.rand(end-start, n)*10, dtype=np.float32, order='F')
-    
+
     c = np.array(a[start:end,:], order='F')
-    
+
     m1 = cm.CUDAMatrix(a)
     m2 = cm.CUDAMatrix(b)
     m1.get_row_slice(start, end, target = m2)
@@ -114,10 +112,10 @@ def test_set_row_slice():
 
     a = np.array(np.random.rand(m, n)*10, dtype=np.float32, order='F')
     b = np.array(np.random.rand(end-start, n)*10, dtype=np.float32, order='F')
-    
+
     c = a.copy()
     c[start:end,:] = b
-    
+
     m1 = cm.CUDAMatrix(a)
     m2 = cm.CUDAMatrix(b)
     m1.set_row_slice(start, end, m2)
@@ -131,9 +129,9 @@ def test_transpose():
 
     a = np.array(np.random.rand(m, n)*10, dtype=np.float32, order='F')
     b = np.array(np.random.rand(n, m), dtype=np.float32, order='F')
-    
+
     c = a.copy().T
-    
+
     m = cm.CUDAMatrix(a)
     mt1 = cm.CUDAMatrix(b)
     m.transpose(target = mt1)
@@ -149,9 +147,9 @@ def test_slice():
     m = 256
     n = 128
     a = np.array(np.random.rand(m, n)*10, dtype=np.float32, order='F')
-    
+
     c = np.array(a[:,32:64], order='F')
-    
+
     m1 = cm.CUDAMatrix(a)
     m2 = m1.slice(32, 64)
     m2.copy_to_host()
@@ -165,9 +163,9 @@ def test_add_col_vec():
     a = np.array(np.random.rand(m, n)*10, dtype=np.float32, order='F')
     b = np.array(np.random.rand(m, 1)*10, dtype=np.float32, order='F')
     t = np.array(np.random.rand(m, n)*10, dtype=np.float32, order='F')
-    
+
     c = a + b
-    
+
     m1 = cm.CUDAMatrix(a)
     m2 = cm.CUDAMatrix(b)
     m3 = cm.CUDAMatrix(t)
@@ -187,9 +185,9 @@ def test_add_col_mult():
     a = np.array(np.random.rand(m, n)*10, dtype=np.float32, order='F')
     b = np.array(np.random.rand(m, 1)*10, dtype=np.float32, order='F')
     t = np.array(np.random.rand(m, n)*10, dtype=np.float32, order='F')
-    
+
     c = a + mult * b
-    
+
     m1 = cm.CUDAMatrix(a)
     m2 = cm.CUDAMatrix(b)
     m3 = cm.CUDAMatrix(t)
@@ -208,9 +206,9 @@ def test_add_row_vec():
     a = np.array(np.random.rand(m, n)*10, dtype=np.float32, order='F')
     b = np.array(np.random.rand(1, n)*10, dtype=np.float32, order='F')
     t = np.array(np.random.rand(m, n)*10, dtype=np.float32, order='F')
-    
+
     c = a + b
-    
+
     m1 = cm.CUDAMatrix(a)
     m2 = cm.CUDAMatrix(b)
     m3 = cm.CUDAMatrix(t)
@@ -229,9 +227,9 @@ def test_mult_by_col():
     a = np.array(np.random.rand(m, n)*10, dtype=np.float32, order='F')
     b = np.array(np.random.rand(m, 1)*10, dtype=np.float32, order='F')
     t = np.array(np.random.rand(m, n)*10, dtype=np.float32, order='F')
-    
+
     c = a * b
-    
+
     m1 = cm.CUDAMatrix(a)
     m2 = cm.CUDAMatrix(b)
     m3 = cm.CUDAMatrix(t)
@@ -250,9 +248,9 @@ def test_mult_by_row():
     a = np.array(np.random.rand(m, n)*10, dtype=np.float32, order='F')
     b = np.array(np.random.rand(1, n)*10, dtype=np.float32, order='F')
     t = np.array(np.random.rand(m, n)*10, dtype=np.float32, order='F')
-    
+
     c = a * b
-    
+
     m1 = cm.CUDAMatrix(a)
     m2 = cm.CUDAMatrix(b)
     m3 = cm.CUDAMatrix(t)
@@ -271,9 +269,9 @@ def test_div_by_col():
     a = np.array(np.random.rand(m, n)*10, dtype=np.float32, order='F')
     b = np.array(np.random.rand(m, 1)*10, dtype=np.float32, order='F') + 0.1
     t = np.array(np.random.rand(m, n)*10, dtype=np.float32, order='F')
-    
+
     c = a / b
-    
+
     m1 = cm.CUDAMatrix(a)
     m2 = cm.CUDAMatrix(b)
     m3 = cm.CUDAMatrix(t)
@@ -292,9 +290,9 @@ def test_div_by_row():
     a = np.array(np.random.rand(m, n)*10, dtype=np.float32, order='F')
     b = np.array(np.random.rand(1, n)*10, dtype=np.float32, order='F') + 0.1
     t = np.array(np.random.rand(m, n)*10, dtype=np.float32, order='F')
-    
+
     c = a / b
-    
+
     m1 = cm.CUDAMatrix(a)
     m2 = cm.CUDAMatrix(b)
     m3 = cm.CUDAMatrix(t)
@@ -313,11 +311,11 @@ def test_sum():
     a = np.array(np.random.rand(m, n)*10, dtype=np.float32, order='F')
     t1 = np.array(np.random.rand(1, n)*10, dtype=np.float32, order='F')
     t2 = np.array(np.random.rand(m, 1)*10, dtype=np.float32, order='F')
-    
+
     mult = 0.8
     c1 = np.atleast_2d(a.sum(0)) * mult
     c2 = np.atleast_2d(a.sum(1)).T
-    
+
     m = cm.CUDAMatrix(a)
     mt1 = cm.CUDAMatrix(t1)
     mt2 = cm.CUDAMatrix(t2)
@@ -344,10 +342,10 @@ def test_sum_trans():
     a = np.array(np.random.rand(m, n)*10, dtype=np.float32, order='F')
     t1 = np.array(np.random.rand(1, m)*10, dtype=np.float32, order='F')
     t2 = np.array(np.random.rand(n, 1)*10, dtype=np.float32, order='F')
-    
+
     c1 = np.atleast_2d(a.T.sum(0))
     c2 = np.atleast_2d(a.T.sum(1)).T
-    
+
     m = cm.CUDAMatrix(a)
     m.set_trans(True)
     mt1 = cm.CUDAMatrix(t1)
@@ -375,10 +373,10 @@ def test_mean():
     a = np.array(np.random.rand(m, n)*10, dtype=np.float32, order='F')
     t1 = np.array(np.random.rand(1, n)*10, dtype=np.float32, order='F')
     t2 = np.array(np.random.rand(m, 1)*10, dtype=np.float32, order='F')
-    
+
     c1 = np.atleast_2d(a.mean(0))
     c2 = np.atleast_2d(a.mean(1)).T
-    
+
     m = cm.CUDAMatrix(a)
     mt1 = cm.CUDAMatrix(t1)
     mt2 = cm.CUDAMatrix(t2)
@@ -409,10 +407,10 @@ def test_add_sums():
 
     mult = np.pi
     beta = 0.7
-    
+
     c1 = beta * t1 + mult * np.atleast_2d(a.sum(1)).T
     c2 = t2 + np.atleast_2d(a.sum(0))
-    
+
     m = cm.CUDAMatrix(a)
     mt1 = cm.CUDAMatrix(t1)
     mt2 = cm.CUDAMatrix(t2)
@@ -551,10 +549,10 @@ def test_minmax():
             a = np.array(np.random.randn(m, n)*10*sign, dtype=np.float32, order='F')
             t0 = np.array(np.random.rand(1, n)*10, dtype=np.float32, order='F')
             t1 = np.array(np.random.rand(m, 1)*10, dtype=np.float32, order='F')
-           
-            r0 = np.atleast_2d(getattr(a, op)(0)) 
-            r1 = np.atleast_2d(getattr(a, op)(1)) 
-            
+
+            r0 = np.atleast_2d(getattr(a, op)(0))
+            r1 = np.atleast_2d(getattr(a, op)(1))
+
             da = cm.CUDAMatrix(a)
             dr10 = cm.CUDAMatrix(t0)
             dr11 = cm.CUDAMatrix(t1)
@@ -1104,7 +1102,7 @@ def test_euclid_norm():
     m = 256
     n = 128
     a = np.array(np.random.rand(m, n)*10, dtype=np.float32, order='F')
-    
+
     m = cm.CUDAMatrix(a)
 
     n1 = np.sqrt(np.sum(a**2))
@@ -1116,7 +1114,7 @@ def test_manhattan_norm():
     m = 256
     n = 128
     a = np.array(np.random.rand(m, n)*10, dtype=np.float32, order='F')
-    
+
     m = cm.CUDAMatrix(a)
 
     n1 = np.sum(np.abs(a), dtype=np.double)
@@ -1128,7 +1126,7 @@ def test_allfinite():
     a = cm.empty((10, 20)).assign(1).divide(0)  # NaN
     b = cm.empty((10, 20)).assign(1e20).mult(1e20)  # Inf
     c = cm.empty((10, 20)).assign(1)  # 1.0
-    
+
     assert (not a.allfinite()) and (not b.allfinite()) and c.allfinite(), "CUDAMatrix.allfinite does not work"
 
 def test_select_columns():
@@ -1140,7 +1138,7 @@ def test_select_columns():
     i_l = [0, 1, 2, 3, 5, 10, 12, 20]
     i = np.array(i_l).T[np.newaxis, :]
     t = np.empty((m, k))
-    
+
     s_d = cm.CUDAMatrix(s)
     i_d = cm.CUDAMatrix(i)
     t_d = cm.CUDAMatrix(t)
@@ -1157,7 +1155,7 @@ def test_where():
     a = np.array(np.random.randn(m, n)*10, dtype=np.float32, order='F')
     z = np.zeros_like(a)
     res = np.where(a > 0, a, z);
-    
+
     a_d = cm.CUDAMatrix(a)
     z_d = cm.CUDAMatrix(z)
     res_d = cm.empty(a_d.shape)
