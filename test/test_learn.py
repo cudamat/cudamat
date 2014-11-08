@@ -2,7 +2,6 @@ import pdb
 import numpy as np
 import nose
 import cudamat as cm
-import learn as cl
 
 def setup():
     cm.cublas_init()
@@ -20,7 +19,7 @@ def test_mult_by_sigmoid_deriv():
     g_acts = cm.CUDAMatrix(c_acts)
 
     c_targets = c_targets * c_acts * (1. - c_acts)
-    cl.mult_by_sigmoid_deriv(g_targets, g_acts)
+    cm.mult_by_sigmoid_deriv(g_targets, g_acts)
 
     assert np.max(np.abs(c_acts - g_acts.asarray())) < 10**-2, "Error in cudamat.learn.mult_by_sigmoid_deriv exceeded threshold"
 

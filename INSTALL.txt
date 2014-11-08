@@ -4,7 +4,9 @@ INSTALLATION INSTRUCTIONS:
 
 1. Install the CUDA SDK.
 
-2. Run make in the cudamat directory.
+2. Run either:
+  * `pip install .` in the root directory 
+  * `make` in the `cudamat` subdirectory
 
 3. Make sure everything works by running the test cases:
 
