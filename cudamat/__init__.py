@@ -1,2 +1,2 @@
-from cudamat import *
-from learn import *
+from .cudamat import *
+from .learn import *
