@@ -19,7 +19,7 @@ def test_mult_by_sigmoid_deriv():
     g_acts = cm.CUDAMatrix(c_acts)
 
     c_targets = c_targets * c_acts * (1. - c_acts)
-    cm.mult_by_sigmoid_deriv(g_targets, g_acts)
+    cm.learn.mult_by_sigmoid_deriv(g_targets, g_acts)
 
     assert np.max(np.abs(c_acts - g_acts.asarray())) < 10**-2, "Error in cudamat.learn.mult_by_sigmoid_deriv exceeded threshold"
 
