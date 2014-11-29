@@ -11,7 +11,11 @@ import sys
 nvcc_compile_args = ['-O', '--ptxas-options=-v', '--compiler-options',
                      "'-fPIC'"]
 cuda_libs = ['cublas', 'cudart']
-cuda_lib_dirs = os.environ.get("LD_LIBRARY_PATH").split(":")
+try:
+    cuda_lib_dirs = os.environ.get("LD_LIBRARY_PATH").split(":")
+except AttributeError:
+    # LD_LIBRARY_PATH not set
+    cuda_lib_dirs = []
 
 cudamat_ext = Extension('cudamat.libcudamat',
                         sources=['cudamat/cudamat.cu',
