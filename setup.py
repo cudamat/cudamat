@@ -6,28 +6,21 @@ from setuptools.command.build_ext import build_ext
 import sys
 
 # CUDA specific config
-# nvcc is assumed to be in users PATH and LD_LIBRARY_PATH is assumed to contain
-# location of -lcublas and -lcudart
+# nvcc is assumed to be in user's PATH
 nvcc_compile_args = ['-O', '--ptxas-options=-v', '--compiler-options',
                      "'-fPIC'"]
-cuda_libs = ['cublas', 'cudart']
-try:
-    cuda_lib_dirs = os.environ.get("LD_LIBRARY_PATH").split(":")
-except AttributeError:
-    # LD_LIBRARY_PATH not set
-    cuda_lib_dirs = []
+nvcc_compile_args = os.environ.get('NVCCFLAGS', '').split() + nvcc_compile_args
+cuda_libs = ['cublas']
 
 cudamat_ext = Extension('cudamat.libcudamat',
                         sources=['cudamat/cudamat.cu',
                                  'cudamat/cudamat_kernels.cu'],
                         libraries=cuda_libs,
-                        library_dirs=cuda_lib_dirs,
                         extra_compile_args=nvcc_compile_args)
 cudalearn_ext = Extension('cudamat.libcudalearn',
                           sources=['cudamat/learn.cu',
                                    'cudamat/learn_kernels.cu'],
                           libraries=cuda_libs,
-                          library_dirs=cuda_lib_dirs,
                           extra_compile_args=nvcc_compile_args)
 
 
@@ -39,6 +32,7 @@ class CUDA_build_ext(build_ext):
     def build_extensions(self):
         self.compiler.src_extensions.append('.cu')
         self.compiler.set_executable('compiler_so', 'nvcc')
+        self.compiler.set_executable('linker_so', 'nvcc --shared')
         build_ext.build_extensions(self)
 
 setup(name="cudamat",
