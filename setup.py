@@ -1,6 +1,7 @@
 #!/usr/bin/env python
 
 import os
+from distutils.spawn import spawn
 from setuptools import setup, find_packages, Extension
 from setuptools.command.build_ext import build_ext
 import sys
@@ -33,7 +34,26 @@ class CUDA_build_ext(build_ext):
         self.compiler.src_extensions.append('.cu')
         self.compiler.set_executable('compiler_so', 'nvcc')
         self.compiler.set_executable('linker_so', 'nvcc --shared')
+        self.compiler.spawn = self.spawn
         build_ext.build_extensions(self)
+
+    def spawn(self, cmd, search_path=1, verbose=0, dry_run=0):
+        """
+        Perform any CUDA specific customizations before actually launching
+        compile/link etc. commands.
+        """
+        if (sys.platform == 'darwin' and len(cmd) >= 2 and cmd[0] == 'nvcc' and
+                cmd[1] == '--shared' and cmd.count('-arch') > 0):
+            # Versions of distutils on OSX earlier than 2.7.9 inject
+            # '-arch x86_64' which we need to strip while using nvcc for
+            # linking
+            while True:
+                try:
+                    index = cmd.index('-arch')
+                    del cmd[index:index+2]
+                except ValueError:
+                    break
+        spawn(cmd, search_path, verbose, dry_run)
 
 setup(name="cudamat",
       version="0.3",
