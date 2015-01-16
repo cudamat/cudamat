@@ -1,3 +1,4 @@
+from __future__ import division
 import time
 import numpy as np
 import cudamat as cm
@@ -17,7 +18,7 @@ momentum = 0.9
 
 num_epochs = 30
 batch_size = 128
-num_batches = dat.shape[1]/batch_size
+num_batches = dat.shape[1]//batch_size
 
 # model parameters
 num_vis = dat.shape[0]
@@ -40,7 +41,7 @@ r = cm.empty((num_hid, batch_size))
 
 start_time = time.time()
 for epoch in range(num_epochs):
-    print "Epoch " + str(epoch + 1)
+    print("Epoch %i" % (epoch + 1))
     err = []
 
     for batch in range(num_batches):
@@ -88,8 +89,8 @@ for epoch in range(num_epochs):
         v.subtract(v_true)
         err.append(v.euclid_norm()**2/(num_vis*batch_size))
 
-    print "Mean squared error: " + str(np.mean(err))
-    print "Time: " + str(time.time() - start_time)
+    print("Mean squared error: %f" % np.mean(err))
+    print("Time: %f" % (time.time() - start_time))
 
 w_vh.copy_to_host()
 util.save('weights.dat', 'w_vh', {'w_vh': w_vh.numpy_array})

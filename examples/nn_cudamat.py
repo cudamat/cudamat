@@ -1,6 +1,7 @@
 # This file shows how to implement a single hidden layer neural network for
 # performing binary classification on the GPU using cudamat.
 
+from __future__ import division
 import pdb
 import time
 import numpy as np
@@ -26,7 +27,7 @@ momentum = 0.9
 
 num_epochs = 30
 batch_size = 128
-num_batches = dat_train.shape[1]/batch_size
+num_batches = dat_train.shape[1]//batch_size
 
 # model parameters
 dim_in = dat_train.shape[0]
@@ -53,7 +54,7 @@ delta = cm.empty((num_hid, batch_size))
 # Train neural network.
 start_time = time.time()
 for epoch in range(num_epochs):
-    print "Epoch " + str(epoch + 1)
+    print("Epoch %i" % (epoch + 1))
     err = []
 
     for batch in range(num_batches):
@@ -98,8 +99,8 @@ for epoch in range(num_epochs):
         # calculate error on current minibatch 
         err.append(np.abs(out.asarray())>0.5)
 
-    print "Training misclassification rate: " + str(np.mean(err))
-    print "Time: " + str(time.time() - start_time)
+    print("Training misclassification rate: %f" % np.mean(err))
+    print("Time: %f" % (time.time() - start_time))
 
 # Evaluate neural network on test data.
 
@@ -127,6 +128,6 @@ out.apply_sigmoid()
 # compute error
 out.subtract(dev_lbl)
 
-print "Testing misclassification rate: " + str(np.mean(np.abs(out.asarray())>0.5))
+print("Testing misclassification rate: %f" % np.mean(np.abs(out.asarray())>0.5))
 
 cm.cublas_shutdown()

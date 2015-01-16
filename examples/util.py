@@ -1,5 +1,7 @@
+from __future__ import division
 import gzip
-import cPickle as pickle
+try: import cPickle as pickle
+except: import pickle
 
 def save(fname, var_list, source_dict):
     var_list = [var.strip() for var in var_list.split() if len(var.strip())>0]
@@ -13,7 +15,7 @@ def load(fname, target_dict, verbose = True):
     fo = gzip.GzipFile(fname, 'rb')
     var_list = pickle.load(fo)
     if verbose:
-        print var_list
+        print(var_list)
     for var in var_list:
         target_dict[var] = pickle.load(fo)
     fo.close()

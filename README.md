@@ -30,7 +30,7 @@ c = cm.dot(a, b)
 d = c.sum(axis = 0)
 
 # copy d back to the host (CPU) and print
-print d.asarray()
+print(d.asarray())
 ```
 
 Documentation

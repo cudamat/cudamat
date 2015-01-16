@@ -1,10 +1,12 @@
+from __future__ import print_function, division
 import sys
 import numpy as np
 import cudamat as cmt
 import time
 import timeit
 from inspect import getmodule, getmembers, isfunction
-from itertools import ifilter
+try: from itertools import ifilter as filter
+except: pass
 
 # heat-up time in seconds before starting the benchmark
 HEATUP = 2
@@ -69,15 +71,15 @@ def main():
     cmt.init()
     cmt.CUDAMatrix.init_random()
     if HEATUP:
-        print "heating up for %g seconds..." % HEATUP,
+        print("heating up for %g seconds..." % HEATUP, end=' ')
         sys.stdout.flush()
         heatup(HEATUP)
-        print "done."
-    print "small matrix shape:", XS_SHAPE
-    print "large matrix shape:", XL_SHAPE
-    for funcname, func in ifilter(lambda (fn, f): fn.startswith('bench_'),
+        print("done.")
+    print("small matrix shape:", XS_SHAPE)
+    print("large matrix shape:", XL_SHAPE)
+    for funcname, func in filter(lambda f: f[0].startswith('bench_'),
             getmembers(getmodule(main), isfunction)):
-        print "%-15s" % funcname[len('bench_'):],
+        print("%-15s" % funcname[len('bench_'):], end=' ')
         sys.stdout.flush()
         for size, shape, factor in ('small', XS_SHAPE, 10), ('large', XL_SHAPE, 1):
             repeat = NUM_REPEATS * getattr(func, 'repeats', 1)
@@ -85,9 +87,9 @@ def main():
                     setup="from __main__ import setup, %s\nmats = setup(%s)" % (funcname, shape),
                     stmt="%s(*mats)" % funcname, repeat=repeat,
                     number=NUM_ITER * factor)) / (NUM_ITER * factor)
-            print "%.3es (%s) " % (time, size),
+            print("%.3es (%s) " % (time, size), end=' ')
             sys.stdout.flush()
-        print
+        print()
     cmt.shutdown()
 
 if __name__=="__main__":

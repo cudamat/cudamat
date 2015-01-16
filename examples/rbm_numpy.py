@@ -1,3 +1,4 @@
+from __future__ import division
 import time
 import numpy as np
 import util
@@ -12,7 +13,7 @@ momentum = 0.9
 
 num_epochs = 10
 batch_size = 64
-num_batches = dat.shape[1]/batch_size
+num_batches = dat.shape[1]//batch_size
 
 # model parameters
 num_vis = dat.shape[0]
@@ -30,7 +31,7 @@ wu_h = np.zeros((num_hid, 1))
 
 start_time = time.time()
 for epoch in range(num_epochs):
-    print "Epoch " + str(epoch + 1)
+    print("Epoch %i" % (epoch + 1))
     err = []
 
     for batch in range(num_batches):
@@ -67,5 +68,5 @@ for epoch in range(num_epochs):
 
         err.append(np.mean((v - v_true)**2))
 
-    print "Mean squared error: " + str(np.mean(err))
-    print "Time: " + str(time.time() - start_time)
+    print("Mean squared error: %f" % np.mean(err))
+    print("Time: %f" % (time.time() - start_time))
