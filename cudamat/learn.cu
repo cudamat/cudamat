@@ -14,7 +14,7 @@ inline bool checkCUDAError() {
     return cudaSuccess != err;
 }
 
-extern int mult_by_sigmoid_deriv(cudamat* target, cudamat* acts) {
+EXPORT int mult_by_sigmoid_deriv(cudamat* target, cudamat* acts) {
     int len = acts->size[0]*acts->size[1];
 
     if (acts->is_trans != target->is_trans)

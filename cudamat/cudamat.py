@@ -6,12 +6,16 @@ import sysconfig
 import ctypes as ct
 import numpy as np
 
+def load_library(basename):
+    if platform.system() == 'Windows':
+       ext = '.dll'
+    else:
+       ext = sysconfig.get_config_var('SO')
+    return ct.cdll.LoadLibrary(os.path.join(
+        os.path.dirname(__file__) or os.path.curdir,
+        basename + ext))
 
-if platform.system() == 'Windows':
-    _cudamat = ct.cdll.LoadLibrary('libcudamat.dll')
-else:
-    _cudamat = ct.cdll.LoadLibrary(os.path.join(
-        os.path.dirname(__file__) or os.path.curdir, 'libcudamat' + sysconfig.get_config_var('SO')))
+_cudamat = load_library('libcudamat')
 
 _cudamat.get_last_cuda_error.restype = ct.c_char_p
 _cudamat.cublas_init.restype = ct.c_int
