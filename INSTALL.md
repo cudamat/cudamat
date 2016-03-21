@@ -3,7 +3,7 @@ Prerequisites
 
 cudamat needs the following to be installed first:
 
-* Python 2.x and numpy
+* Python 2.x or 3.x and numpy
 * The CUDA SDK
 * nose for running the tests (optional)
 
