@@ -143,6 +143,10 @@ def generate_exception(err_code):
         return CUDAMatException("Matrix is not in device memory.")
     elif err_code == -9:
         return CUDAMatException("Operation not supported.")
+    elif err_code == -10:
+        return CUDAMatException("Internal error.")
+    else:
+        return CUDAMatException("")
 
 
 class cudamat(ct.Structure):

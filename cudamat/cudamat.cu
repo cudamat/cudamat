@@ -59,6 +59,9 @@ EXPORT int init_random(rnd_struct* rnd_state, int seed, char* cudamatpath) {
     FILE * pFile;
 
     pFile = fopen (cudamatpath,"r");
+    if (pFile == NULL) {
+        return -10;
+    }
 
     for (int i = 0; i < NUM_RND_STREAMS; i++) {
         fscanf (pFile, "%u", &host_mults[i]);
