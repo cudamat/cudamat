@@ -2,6 +2,7 @@ import os
 import platform
 import warnings
 import sysconfig
+import sys
 
 import ctypes as ct
 import numpy as np
@@ -238,6 +239,9 @@ class CUDAMatrix(object):
 
         cudamat_path = os.path.join(os.path.abspath(os.path.dirname(__file__)),
                                     'rnd_multipliers_32bit.txt')
+
+        if sys.version_info >= (3,):
+            cudamat_path = cudamat_path.encode(sys.getfilesystemencoding())
 
         err_code = _cudamat.init_random(CUDAMatrix.rnd_state_p,
                                         ct.c_int(seed),
