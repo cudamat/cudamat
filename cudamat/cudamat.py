@@ -19,6 +19,7 @@ def load_library(basename):
 _cudamat = load_library('libcudamat')
 
 _cudamat.get_last_cuda_error.restype = ct.c_char_p
+_cudamat.get_last_clib_error.restype = ct.c_char_p
 _cudamat.cublas_init.restype = ct.c_int
 _cudamat.cublas_shutdown.restype = ct.c_int
 _cudamat.cuda_set_device.restype = ct.c_int
@@ -119,9 +120,18 @@ def get_last_cuda_error():
     return str(_cudamat.get_last_cuda_error())
 
 
-def generate_exception(err_code):
+def get_last_clib_error():
+    errmsg = _cudamat.get_last_clib_error()
+    if sys.version_info >= (3,):
+        return bytes(errmsg).decode()
+    else:
+        return str(errmsg)
+
+
+def generate_exception(err_code, **kwargs):
     """
     Return a CUDAMatException object based on the error code err_code.
+    Additional arguments are error-specific and optional.
     """
 
     if err_code == -1:
@@ -144,7 +154,15 @@ def generate_exception(err_code):
     elif err_code == -9:
         return CUDAMatException("Operation not supported.")
     elif err_code == -10:
-        return CUDAMatException("Internal error.")
+        filepath = kwargs.get("filepath","");
+        if filepath:
+            filepath = ": '%s'" % filepath
+        return CUDAMatException("Cannot open file%s: %s" % (filepath,get_last_clib_error()))
+    elif err_code == -11:
+        filepath = kwargs.get("filepath","");
+        if filepath:
+            filepath = ": '%s'" % filepath
+        return CUDAMatException("Cannot parse file%s." % filepath)
     else:
         return CUDAMatException("")
 
@@ -251,7 +269,9 @@ class CUDAMatrix(object):
                                         ct.c_int(seed),
                                         cudamat_path)
         if err_code:
-            raise generate_exception(err_code)
+            if sys.version_info >= (3,):
+                cudamat_path = cudamat_path.decode(sys.getfilesystemencoding())
+            raise generate_exception(err_code, filepath=cudamat_path)
 
     @property
     def shape(self):

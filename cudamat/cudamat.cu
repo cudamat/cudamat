@@ -1,4 +1,6 @@
 #include <stdio.h>
+#include <errno.h>
+#include <string.h>
 #include <stdlib.h>
 #include <cublas.h>
 #include "cudamat_kernels.cuh"
@@ -26,6 +28,10 @@ EXPORT const char* get_last_cuda_error() {
     cudaError_t err = cudaGetLastError();
 
     return cudaGetErrorString( err);
+}
+
+EXPORT const char* get_last_clib_error() {
+    return strerror(errno);
 }
 
 EXPORT int cublas_init() {
@@ -60,11 +66,13 @@ EXPORT int init_random(rnd_struct* rnd_state, int seed, char* cudamatpath) {
 
     pFile = fopen (cudamatpath,"r");
     if (pFile == NULL) {
-        return -10;
+        return ERROR_FILE_OPEN;
     }
 
     for (int i = 0; i < NUM_RND_STREAMS; i++) {
-        fscanf (pFile, "%u", &host_mults[i]);
+        if (fscanf (pFile, "%u", &host_mults[i]) != 1) {
+            return ERROR_FILE_SCAN;
+        }
     }
     fclose (pFile);
 

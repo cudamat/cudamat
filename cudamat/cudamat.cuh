@@ -15,6 +15,8 @@
 #define ERROR_TRANSPOSEDNESS -7
 #define ERROR_NOT_ON_DEVICE -8
 #define ERROR_UNSUPPORTED -9
+#define ERROR_FILE_OPEN -10
+#define ERROR_FILE_SCAN -11
 
 struct cudamat {
     float* data_host;
