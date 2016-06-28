@@ -117,7 +117,11 @@ class CUDAMatException(Exception):
 
 
 def get_last_cuda_error():
-    return str(_cudamat.get_last_cuda_error())
+    errmsg = _cudamat.get_last_cuda_error()
+    if sys.version_info >= (3,):
+        return bytes(errmsg).decode()
+    else:
+        return str(errmsg)
 
 
 def get_last_clib_error():
