@@ -1587,4 +1587,30 @@ EXPORT int where(cudamat* condition_mat, cudamat* if_mat, cudamat* else_mat, cud
     return 0;
 }
 
+EXPORT int correlate(cudamat* source, cudamat* kernel, cudamat* dest) {
+    int len = source->size[0] * source->size[1];
+
+    if (!source->on_device || !kernel->on_device || !dest->on_device)
+        return ERROR_NOT_ON_DEVICE;
+
+    if (source->size[0] != dest->size[0] || source->size[1] != dest->size[1])
+        return ERROR_INCOMPATIBLE_DIMENSIONS;
+
+    if (kernel->size[0] % 2 == 0 || kernel->size[1] % 2 == 0 ||
+        kernel->size[0] > source->size[0] || kernel->size[1] > source->size[1])
+        return ERROR_INCOMPATIBLE_DIMENSIONS;
+
+    kCorrelate<<<NUM_VECTOR_OP_BLOCKS(len),NUM_VECTOR_OP_THREADS_PER_BLOCK(len)>>>(source->data_device, 
+        kernel->data_device, dest->data_device, source->size[1], source->size[0], 
+        kernel->size[1], kernel->size[0]);
+
+    if (SYNC_THREADS)
+        cudaThreadSynchronize();
+
+    if (checkCUDAError())
+        return CUDA_ERROR;
+
+     return 0;
+}
+
 }

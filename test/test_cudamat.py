@@ -1164,5 +1164,29 @@ def test_where():
     assert np.abs(res-res_d.asarray()).max() < 1e-2, "Error in cudamat.where"
 
 
+def test_correlate():
+    m = 64
+    n = 32
+    km = 17
+    kn = 11
+
+    a = np.array(np.random.randn(m, n)*10, dtype=np.float32, order='F')
+    k = np.array(np.random.randn(km, kn)*10, dtype=np.float32, order='F')
+
+    res = np.zeros_like(a)
+    for i in range(len(a)):
+        for j in range(len(a[0])):
+            for h in range(-(km/2), km/2 + 1):
+                for w in range(-(kn/2), kn/2 + 1):
+                    if i+h >= 0 and i+h < m and j+w >= 0 and j+w < n:
+                        res[i][j] += a[i + h][j + w] * k[km/2 + h][kn/2 + w]
+
+    a_d = cm.CUDAMatrix(a)
+    k_d = cm.CUDAMatrix(k)
+
+    res_d = cm.correlate(a_d, k_d)
+    assert np.abs(res-res_d.asarray()).max() < 1e-2, "Error in cudamat.correlate"
+
+
 if __name__ == '__main__':
     nose.runmodule()

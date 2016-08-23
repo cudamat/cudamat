@@ -96,6 +96,8 @@ _cudamat.dot.restype = ct.c_int
 
 _cudamat.where.restype = ct.c_int
 
+_cudamat.correlate.restype = ct.c_int
+
 
 def deprecated(func):
     """This is a decorator which can be used to mark functions
@@ -1495,6 +1497,27 @@ def where(condition_mat, if_mat, else_mat, target=None):
 
     err_code = _cudamat.where(condition_mat.p_mat, if_mat.p_mat,
                               else_mat.p_mat, target.p_mat)
+    if err_code:
+        raise generate_exception(err_code)
+
+    return target
+
+
+def correlate(mat, kernel, target=None):
+    """
+    Cross-correlate a matrix with a kernel matrix.
+    The kernel matrix is centered over each element of the matrix mat.
+    Width and height of the kernel matrix must be an odd integer.
+    If a target is not provided, a new matrix is created for storing the result.
+    Note that this function cannot operate in-place.
+    """
+    if not target:
+        m = _cudamat.get_leading_dimension(mat.p_mat)
+        n = _cudamat.get_nonleading_dimension(mat.p_mat)
+
+        target = empty((m, n))
+
+    err_code = _cudamat.correlate(mat.p_mat, kernel.p_mat, target.p_mat)
     if err_code:
         raise generate_exception(err_code)
 
