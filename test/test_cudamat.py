@@ -1047,6 +1047,14 @@ def test_dot_vect():
     C = cm.dot(A.T, B.slice(0, m))
     assert np.max(np.abs(c - C.asarray())) < 10**-2, "Error in CUDAMatrix.dot exceeded threshold"
 
+    c = np.dot(b.T, a.T)
+    C = cm.dot(B.T, A.T)
+    assert np.max(np.abs(c - C.asarray())) < 10**-2, "Error in CUDAMatrix.dot exceeded threshold"
+
+    c = np.dot(b[:m].T, a)
+    C = cm.dot(B.slice(0, m).reshape((1, m)), A)
+    assert np.max(np.abs(c - C.asarray())) < 10**-2, "Error in CUDAMatrix.dot exceeded threshold"
+
 def test_add_dot():
     m = 128
     k = 256
