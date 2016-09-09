@@ -1228,11 +1228,28 @@ EXPORT int dot(cudamat* mat1, cudamat* mat2, cudamat* target, float beta, float 
         k = get_leading_dimension(mat2),
         n = get_nonleading_dimension(mat2);
 
-    cublasSgemm(get_transpose_char(mat1), get_transpose_char(mat2), 
-                m, n, k,
-                alpha, mat1->data_device, mat1->size[0],
-                mat2->data_device, mat2->size[0],
-                beta, target->data_device, target->size[0]);
+    // gemv if second matrix is a (column) vector
+    if (n == 1) {
+        cublasSgemv(get_transpose_char(mat1), mat1->size[0], mat1->size[1],
+                    alpha, mat1->data_device, mat1->size[0],
+                    mat2->data_device, 1,
+                    beta, target->data_device, 1);
+    }
+    // gemv if first matrix is a (row) vector
+    else if (m == 1) {
+        cublasSgemv(mat2->is_trans ? 'n' : 't', mat2->size[0], mat2->size[1],
+                    alpha, mat2->data_device, mat2->size[0],
+                    mat1->data_device, 1,
+                    beta, target->data_device, 1);
+    }
+    // gemm otherwise
+    else {
+        cublasSgemm(get_transpose_char(mat1), get_transpose_char(mat2),
+                    m, n, k,
+                    alpha, mat1->data_device, mat1->size[0],
+                    mat2->data_device, mat2->size[0],
+                    beta, target->data_device, target->size[0]);
+    }
 
     if (check_cublas_error())
         return CUBLAS_ERROR;

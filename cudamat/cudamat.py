@@ -1559,8 +1559,7 @@ def cublas_init(max_ones=(1024*256)):
     err = _cudamat.cublas_init()
     if err:
         raise CUDAMatException('error initializing CUBLAS: (err=%u)' % err)
-    CUDAMatrix.ones = CUDAMatrix(np.ones((max_ones, 1), dtype=np.float32,
-                                         order='F'))
+    CUDAMatrix.ones = empty((max_ones, 1)).assign(1.0)
 
 init = cublas_init
 

@@ -1030,6 +1030,31 @@ def test_dot_trans():
 
     assert np.max(np.abs(c - m3.numpy_array)) < 10**-2, "Error in CUDAMatrix.dot exceeded threshold"
 
+def test_dot_vect():
+    m = 128
+    k = 256
+    n = 1
+    a = np.array(np.random.randn(m, k)*10, dtype=np.float32, order='F')
+    b = np.array(np.random.randn(k, n)*10, dtype=np.float32, order='F')
+    A = cm.CUDAMatrix(a)
+    B = cm.CUDAMatrix(b)
+
+    c = np.dot(a, b)
+    C = cm.dot(A, B)
+    assert np.max(np.abs(c - C.asarray())) < 10**-2, "Error in CUDAMatrix.dot exceeded threshold"
+
+    c = np.dot(a.T, b[:m])
+    C = cm.dot(A.T, B.slice(0, m))
+    assert np.max(np.abs(c - C.asarray())) < 10**-2, "Error in CUDAMatrix.dot exceeded threshold"
+
+    c = np.dot(b.T, a.T)
+    C = cm.dot(B.T, A.T)
+    assert np.max(np.abs(c - C.asarray())) < 10**-2, "Error in CUDAMatrix.dot exceeded threshold"
+
+    c = np.dot(b[:m].T, a)
+    C = cm.dot(B.slice(0, m).reshape((1, m)), A)
+    assert np.max(np.abs(c - C.asarray())) < 10**-2, "Error in CUDAMatrix.dot exceeded threshold"
+
 def test_add_dot():
     m = 128
     k = 256
